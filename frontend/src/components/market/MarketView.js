@@ -30,10 +30,8 @@ const MarketView = () => {
                     <button onClick={() => navigate('/portfolio')} className="nav-button">Portfolio</button>
                     <button onClick={() => {
                         localStorage.removeItem('token');
-                        navigate('/login');
-                        }}
-                        className="logout"
-                    > logout
+                        navigate('/login')}}
+                        className="logout"> logout
                     </button>
                 </div>
             </nav>

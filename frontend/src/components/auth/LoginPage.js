@@ -1,28 +1,18 @@
 import React, { useState } from "react";
-import { useNavigate } from "react-router-dom";
-
-
 
 const LoginPage = () => {
-  const navigate = useNavigate();
+  const [showAbout, setShowAbout] = useState(false);
   const [credentials, setCredentials] = useState({email: '', password: ''});
-  const [error, setError] = useState('');
 
-  const handleLogin = (e) => {
+  const handleSubmit = (e) => {
     e.preventDefault();
-
-    if (credentials.email && credentials.password) {
-      localStorage.setItem('token', 'mock-jwt-token');
-      navigate('/dashboard');
-    } else {
-      setError('Please enter both email and password');
-    }
   };
+
     return (
         <div className="login-container">
           <div className="login-box">
             <h1 className="login-title">TradeWise</h1>
-            <form onSubmit={handleLogin} className="space-y-4">
+            <form onSubmit={handleSubmit}>
               <input 
                 type="email"
                 placeholder="email"
@@ -37,10 +27,30 @@ const LoginPage = () => {
                 value={credentials.password}
                 onChange={(e) => setCredentials({...credentials, password: e.target.value})}
               />
-              <button type="submit" className="button button-primary">Login</button>
+              <div className="tagline">smart investing starts here</div>
+              <button type="submit" className="login-button">login</button>
             </form>
+            <div className="new-user">
+              new user?<span className="create-link"> create account</span> 
+            </div>
+            <button 
+              className="about-button" 
+              onClick={() => setShowAbout(!showAbout)}
+            >
+              about
+            </button>
+
+            {showAbout && (
+              <div className="about-section">
+                <h2 className="login-title">TradeWise</h2>
+                <p>TradeWise is a user-friendly app that makes investion in the stock market simple and straight-forward.</p>
+                <p>To begin, create an account.</p>
+                <p>Once you log in, you will be taken to your dashboard.</p>
+                <p>Every page has a help button for more detailed instructions.</p>
+              </div>
+            )}
+            </div>
           </div>
-        </div>
       );
 };
     

@@ -53,7 +53,7 @@ const MarketView = () => {
                         >Enter</button>
                     <button 
                         className="help-button"
-                        onClick={(e) => setShowHelp(!showHelp)}
+                        onClick={() => setShowHelp(!showHelp)}
                         >help
                     </button>
                 </div>
@@ -61,11 +61,12 @@ const MarketView = () => {
                 {showHelp && (
                 <div className="help-tooltip">
                     <div className="help-section">
-                        <div className="help-title">Search Stocks:</div>
-                        <p className="help-text">
-                            Search Stocks: enter a Stock's symbol
+                        <span className="help-title">Search Stocks:</span>
+                        <p>
+                            enter a Stock's symbol
                             such as GOOG or a stock's name such as "Google" or "Alphabet Inc" to
-                            see the latest market data on a given stock. </p>
+                            see the latest market data on a given stock. 
+                        </p>
                         <p>Each holding will list the current price of one share, as well as the
                         percentage of change in price for the current trading day.</p>
                     </div>
@@ -74,21 +75,21 @@ const MarketView = () => {
 
                 <div className="market-data">
                     <h2 className="section-title">Market Data</h2>
-                    {stocks.map(stock => (
+                        {stocks.map(stock => (
                         <div key={stock.symbol} className="stock-item">
-                        <div className="stock-info">
+                            <div className="stock-info">
                                 <div className="stock-symbol">{stock.symbol}</div>
                                 <div className="stock-name">{stock.name}</div>
-                        </div>
-                        <div className="stock-price">
-                            <div className="price">${stock.price}</div>
-                        <div className={`change ${stock.change.startsWith('+') ? 'positive' : 'negative'}`}>
-                            {stock.change}
-                        </div>
-                        </div>
+                            </div>
+                            <div className="stock-price">
+                                <div className="price">${stock.price}</div>
+                            <div className={`change ${stock.change.startsWith('+') ? 'positive' : 'negative'}`}>
+                                {stock.change}
+                            </div>
+                            </div>
                         </div>
         ))}
-        </div>
+                </div>
         </div>
     )
 }

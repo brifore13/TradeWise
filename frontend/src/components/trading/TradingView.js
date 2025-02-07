@@ -75,18 +75,18 @@ const TradeView = () => {
                             onChange={(e) => setOrder({...order, quantity: e.target.value})}
                         />
 
-                        <div className="total-display">Total transaction: ${calculateTotal}</div>
+                        <div className="total-display">Total transaction: ${calculateTotal()}</div>
 
                         <div className="trade-button">
                             <button 
                                 type="button"
-                                className='buy-button'
+                                className="buy-button"
                                 onClick={() => setOrder({...order, type: 'buy'})}
                                 > Buy
                             </button>
                             <button
                                 type="button"
-                                className='sell-button'
+                                className="sell-button"
                                 onClick={() => setOrder({...order, type: 'sell'})}
                                 >Sell
                             </button>
@@ -123,7 +123,7 @@ const TradeView = () => {
                             </p>
                             <p className="warning">this cannot be undone</p>
                             <div className="confirmation-buttons">
-                                <button className="confirmation-button" onClick={handleConfirm}>Confirm</button>
+                                <button className="confirm-button" onClick={handleConfirm}>Confirm</button>
                                 <button className="cancel-button" onClick={() => setShowConfirmation(false)}>Cancel</button>
                             </div>
                         </div>

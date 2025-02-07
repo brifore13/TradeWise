@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 
 const PortfolioView = () => {
-    const [showHelp, setShowHelp] = useState('false');
+    const [showHelp, setShowHelp] = useState(false);
     const navigate = useNavigate();
 
 

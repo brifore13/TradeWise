@@ -370,6 +370,64 @@ body {
   color: #ef4444;
 }
 
+/* Portfolio */
+.portfolio-container {
+  max-width: 1200px;
+  margin: 20px auto;
+  padding: 20px;
+}
+
+.portfolio-summary {
+  border: 1px solid #71B280;
+  border-radius: 15px;
+  padding: 20px;
+  margin-bottom: 20px;
+  position: relative;
+}
+
+.summary-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+}
+
+.summary-title {
+  font-size: 24px;
+  color: #333;
+}
+
+.summary-content {
+  display: flex;
+  justify-content: space-between;
+  padding: 0 200px;
+}
+
+.value-label {
+  color: #71B280;
+  font-size: 18px;
+  margin-bottom: 5px;
+}
+
+.value-amount {
+  font-size: 24px;
+  color: #333;
+}
+
+.holdings-container {
+  border: 1px solid #71B280;
+  border-radius: 15px;
+  padding: 20px;
+}
+
+.shares-count {
+  color: #666;
+  font-size: 14px;
+}
+
+.holding-value {
+  text-align: right;
+}
 /* help section */
 .help-button {
   background: #83ab85;

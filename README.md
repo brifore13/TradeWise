@@ -10,7 +10,7 @@ Consisting of 5 microservices
 5. Portfolio Service
 
 Project Stack:
-    Frontend: React, JSX, CSS
-    Backend: Python Flask Microservices
-    Infrastructure: Microservices Architecture
-    Services Communication: HTTP requests
+1. Frontend: React, JSX, CSS
+2. Backend: Python Flask Microservices
+3. Infrastructure: Microservices Architecture
+4. Services Communication: HTTP requests

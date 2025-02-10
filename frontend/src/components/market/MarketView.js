@@ -26,8 +26,9 @@ const MarketView = () => {
                 <span className="nav-logo">TradeWise</span>
                 <div className="nav-links">
                     <button onClick={() => navigate('/market')} className="nav-button">Market</button>
-                    <button onClick={() => navigate('/trading')} className="nav-button">Trade</button>
+                    <button onClick={() => navigate('/trading')} className="nav-button">Trading</button>
                     <button onClick={() => navigate('/portfolio')} className="nav-button">Portfolio</button>
+                    <button onClick={() => navigate('/dashboard')} className="nav-button">Dashboard</button>
                     <button onClick={() => {
                         localStorage.removeItem('token');
                         navigate('/login')}}

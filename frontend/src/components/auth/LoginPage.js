@@ -1,8 +1,10 @@
 import React, { useState } from "react";
+import { useNavigate } from "react-router-dom";
 
 const LoginPage = () => {
   const [showAbout, setShowAbout] = useState(false);
   const [credentials, setCredentials] = useState({email: '', password: ''});
+  const navigate = useNavigate();
 
   const handleSubmit = (e) => {
     e.preventDefault();
@@ -28,7 +30,9 @@ const LoginPage = () => {
                 onChange={(e) => setCredentials({...credentials, password: e.target.value})}
               />
               <div className="tagline">smart investing starts here</div>
-              <button type="submit" className="login-button">login</button>
+              <button onClick={() => navigate('/dashboard')}
+              type="submit" 
+              className="login-button">login</button>
             </form>
             <div className="new-user">
               new user?<span className="create-link"> create account</span> 

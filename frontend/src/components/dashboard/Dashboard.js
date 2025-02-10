@@ -12,7 +12,7 @@ const Dashboard = () => {
                 <span className="nav-logo">TradeWise</span>
                 <div className="nav-links">
                     <button onClick={() => navigate('/market')} className="nav-button">Market</button>
-                    <button onClick={() => navigate('/trading')} className="nav-button">Trade</button>
+                    <button onClick={() => navigate('/trading')} className="nav-button">Trading</button>
                     <button onClick={() => navigate('/portfolio')} className="nav-button">Portfolio</button>
                     <button onClick={() => {
                         localStorage.removeItem('token');
@@ -36,11 +36,11 @@ const Dashboard = () => {
                 </div>
                 <div className="values-container">
                     <div className="value-item">
-                        <div className="value-lable">Total Value</div>
+                        <div className="value-label">Total Value</div>
                         <div className="value-amount">$3973.09</div>
                     </div>
                     <div className="value-item">
-                        <div className="value-lable">Today's Change</div>
+                        <div className="value-label">Today's Change</div>
                         <div className="value-amount positive-change">+215.67</div>
                     </div>
                 </div>

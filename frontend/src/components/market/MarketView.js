@@ -1,21 +1,19 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 
 
 const MarketView = () => {
     const [showHelp, setShowHelp] = useState(false);
-    const [searchTerm, setSearchTerm] = useState('');
     const navigate = useNavigate();
+    const [marketData, setMarketData] = useState({});
+    const [loading, setLoading] = useState(true);
 
-    const handleSearch = () => {
-        console.log('Searching for:', searchTerm);
-      };
+    // lists of stocks to track
+    const stocks = ['AAPL', 'GOOGL', 'MSFT'];
 
-    const stocks = [
-        { symbol: 'GOOG', name: 'Alphabet Inc.', price: 201.09, change: '+2.4%' },
-        { symbol: 'AAPL', name: 'Apple Inc.', price: 222.78, change: '-1.8%' },
-        { symbol: 'NKE', name: 'NIKE, Inc.', price: 73.57, change: '-0.07%' }
-      ];
+    useEffect(() => {
+        const fetchStockdata
+    })
 
     
 

@@ -1,21 +1,36 @@
-import React, { useEffect, useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-
+import { fetchMarketData } from "../services/api"
 
 const MarketView = () => {
-    const [showHelp, setShowHelp] = useState(false);
     const navigate = useNavigate();
-    const [marketData, setMarketData] = useState({});
+    const [stocks, setStocks] = useState([]);
     const [loading, setLoading] = useState(true);
+    const [searchTerm, setSearchTerm] = useState("");  // Add this
+    const [showHelp, setShowHelp] = useState(false);  // Add this
 
-    // lists of stocks to track
-    const stocks = ['AAPL', 'GOOGL', 'MSFT'];
+    const handleSearch = () => {
+        // TODO: Implement search functionality
+        console.log("Searching for:", searchTerm);
+    };
 
     useEffect(() => {
-        const fetchStockdata
-    })
+        const loadMarketData = async () => {
+            try {
+                const data = await fetchMarketData();
+                setStocks(data);
+                setLoading(false);
+            } catch (error) {
+                console.error('Error loading market data:', error);
+                setLoading(false);
+            }
+        };
 
-    
+        loadMarketData();
+    }, []);
+
+    if (loading) return <div>Loading market data...</div>;
+
 
     return (
         <div className="market-container">

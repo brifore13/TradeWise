@@ -7,7 +7,8 @@ const MarketView = () => {
     const [stocks, setStocks] = useState([]);
     const [loading, setLoading] = useState(true);
     const [searchTerm, setSearchTerm] = useState("");  // Add this
-    const [showHelp, setShowHelp] = useState(false);  // Add this
+    const [showHelp, setShowHelp] = useState(false);
+    const [error, setError] = useState(null);
 
     const handleSearch = () => {
         // TODO: Implement search functionality
@@ -17,19 +18,26 @@ const MarketView = () => {
     useEffect(() => {
         const loadMarketData = async () => {
             try {
+                setLoading(true);
                 const data = await fetchMarketData();
                 setStocks(data);
-                setLoading(false);
+                console.log(data)
+                setError(null);
             } catch (error) {
                 console.error('Error loading market data:', error);
-                setLoading(false);
+                setError('Failed to load market data');
+            } finally {
+                setLoading(false)
             }
         };
 
         loadMarketData();
+        const interval = setInterval(loadMarketData, 60000);
+        return () => clearInterval(interval);
     }, []);
 
     if (loading) return <div>Loading market data...</div>;
+    if (error) return <div>Error: {error}</div>
 
 
     return (
@@ -94,14 +102,14 @@ const MarketView = () => {
                                 <div className="stock-name">{stock.name}</div>
                             </div>
                             <div className="stock-price">
-                                <div className="price">${stock.price}</div>
-                            <div className={`change ${stock.change.startsWith('+') ? 'positive' : 'negative'}`}>
-                                {stock.change}
-                            </div>
+                                <div className="price">${parseFloat(stock.price).toFixed(2)}</div>
+                            <div className={`change ${parseFloat(stock.change) >= 0 ? 'positive' : 'negative'}`}>
+                                {stock.change_percent}
                             </div>
                         </div>
-        ))}
-                </div>
+                    </div>
+                ))}
+            </div>
         </div>
     )
 }

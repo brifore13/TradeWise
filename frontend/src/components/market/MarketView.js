@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { fetchMarketData } from "../services/api"
+import { fetchMarketData } from "../../services/api"
 
 const MarketView = () => {
     const navigate = useNavigate();

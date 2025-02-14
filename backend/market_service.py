@@ -1,48 +1,36 @@
+# market_service.py
 from flask import Flask, jsonify
 from flask_cors import CORS
-import requests
-
 
 app = Flask(__name__)
 CORS(app)
 
-# Alpha Vantage API key
-API_KEY = 'YERZJPFR070E43GC'
-BASE_URL = 'https://www.alphavantage.co/query'
-
-
-# get stock data
-@app.route('api/market/stock/<symbol>')
-def get_stock_price(symbol):
-    try:
-
-        # alpha vantage stock data
-        params = {
-            'function': 'GLOBAL_QUOTE',
-            'symbol': symbol,
-            'apikey': API_KEY
+@app.route('/market')
+def get_market_data():
+    # Hardcoded stock data for now
+    stocks_data = [
+        {
+            'symbol': 'GOOG',
+            'name': 'Alphabet Inc.',
+            'price': 201.09,
+            'change': '+2.4%'
+        },
+        {
+            'symbol': 'AAPL',
+            'name': 'Apple Inc.',
+            'price': 222.78,
+            'change': '-1.8%'
+        },
+        {
+            'symbol': 'NKE',
+            'name': 'NIKE, Inc.',
+            'price': 73.57,
+            'change': '-0.07%'
         }
-
-        # request stock data
-        response = requests.get(BASE_URL, params=params)
-        data = response.json()
-
-        if "Global Quote" in data:
-            quote = data["Global Quote"]
-
-            # return stock data
-            return jsonify({
-                "symbol": symbol,
-                "price": quote['05. price'],
-                "change": quote['09. change'],
-                "change_percent": quote['10. change percent']
-            })
-        else:
-            return jsonify({'error': 'Stock data not found'}), 404
-
-    except Exception as e:
-        return jsonify({'error': str(e)}), 500
+    ]
+    return jsonify(stocks_data)
 
 
 if __name__ == '__main__':
-    app.run(host='127.0.0.1', port=9001)
+    print("Market service running on port 9001")
+    app.run(port=9001, debug=True)

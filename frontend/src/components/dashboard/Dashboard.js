@@ -1,9 +1,25 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
+import { fetchDashboard } from "../services/api";
 
 const Dashboard = () => {
     const [showHelp, setShowHelp] = useState(false);
     const navigate = useNavigate();
+    const [dashboardData, setDashboardData] = useState(null);
+
+    useEffect(() => {
+        const loadData = async () => {
+            try {
+                const data = await fetchDashboard();
+                setDashboardData(data);
+            } catch (error) {
+                console.error('Error loading dashboard:', error);
+            }
+        };
+        loadData();
+    }, []);
+
+    if (!dashboardData) return <div>Loading...</div>;
 
     return (
         <div className="dashboard-container">

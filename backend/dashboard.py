@@ -23,4 +23,4 @@ def dashboard():
 
 if __name__ == '__main__':
     print('Server starting on http://localhost:9000')
-    app.run(host='127.0.0.1', port=9000, debug=True)
+    app.run(host='127.0.0.1', port=9001, debug=True)

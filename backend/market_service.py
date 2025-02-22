@@ -1,5 +1,5 @@
 # market_service.py
-from flask import Flask, jsonify
+from flask import Flask, jsonify, request
 from flask_cors import CORS
 import requests
 
@@ -10,38 +10,66 @@ CORS(app)
 API_KEY = 'YERZJPFR070E43GC'
 BASE_URL = 'https://www.alphavantage.co/query'
 
-# Default stocks
-DEFAULT_STOCKS = ['AAPL', 'GOOGL', 'MSFT']
+# Store favorite stocks
+FAVORITES_FILE = favorites.json()
 
-# get market data
-@app.route('/market')
-def get_market_data():
+# Load JSON file
+def load_favorites():
+    if os.path.exists(FAVORITES_FILE):
+        with open(FAVORITES_FILE, 'r') as f:
+            return json.load(f)
+    return []
+
+# Save to json file
+def save_favorites(favorites):
+    with open(FAVORITES_FILE, 'w') as f:
+        json.dump(favorites, f)
+
+# Search for stocks
+@app.route('/market/search', methods=['GET'])
+def search_stock():
+    symbol = request.args.get('symbol', '').upper()
     try:
-        stock_data = []
-        for symbol in DEFAULT_STOCKS:
-            params = {
-                'function': 'GLOBAL_QUOTE',
-                'symbol': symbol,
-                'apikey': API_KEY
-            }
+        # get stock quotes from alpha vantage API
+        params = {
+            'function': 'SYMBOL_SEARCH',
+            'keywords': symbol,
+            'apikey': API_KEY
+        }
 
-            response = requests.get(BASE_URL, params=params)
-            data = response.json()
+        response = requests.get(BASE_URL, params=params)
+        data = response.json()
 
-            if "Global Quote" in data:
-                quote = data["Global Quote"]
-                stock_data.append({
-                    'symbol': symbol,
-                    'price': quote['05. price'],
-                    'change': quote['09. change'],
-                    'change_percent': quote['10. change percent']
-                })
-        print('Sending stock data:', stock_data)
-        return jsonify(stock_data)
+        # get stock data
+        if 'bestMatches' in data:
+            results = []
+            for match in data['bestMatches']:
+                # get current price for each match
+                price_params = {
+                    'function': 'GLOBAL_QUOTE',
+                    'symbol': match['1. symbol'],
+                    'apikey': API_KEY
+                }
+                price_response = requests.get(BASE_URL, params=price_params)
+                price_data = price_response.json()
 
+                if 'Global Quote' in price_data:
+                    quote = price_data['Global Quote']
+                    results.append({
+                        'symbol': match['1. symbol'],
+                        'name': match['2. name'],
+                        'price': quote['.05 price'],
+                        'change': quote['10. change percent']
+                    })
+            return jsonify(results)
+        
+        return jsonify([])
+    
     except Exception as e:
-        print(f"Error fetching market data: {e}")
+        print(f"Error search stocks: {e}")
         return jsonify({'error': str(e)}), 500
+
+# Save favorites
 
 
 if __name__ == '__main__':

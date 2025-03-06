@@ -1,35 +1,88 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { executeTrade } from "../../services/api";
 
 
 const TradeView = () => {
     const navigate = useNavigate();
     const [showHelp, setShowHelp] = useState(false);
     const [showConfirmation, setShowConfirmation] = useState(false);
+    const [tradeResult, setTradeResult] = useState(null);
+    const [error, setError] = useState(null)
+    const [quoteData, setQuoteData] = useState(null);
     const [order, setOrder] = useState({
         symbol: '',
         quantity: '',
-        type: 'buy',
-        total: 0
+        action: 'BUY',
     });
 
     const calculateTotal = () => {
-        const mockPrice = 234.00;
-        return (mockPrice * order.quantity).toFixed(2);
+        const price = quoteData ? quoteData.price : 0;
+        return (parseFloat(order.quantity) || 0) * price;
     }
 
-    const handleSubmit = (e) => {
+    //  fetch stock quote data
+    const fetchStockQuote = async(symbol) => {
+        if (!symbol) return;
+
+        try {
+            setError(null);
+            const data = await getStockQuote(symbol);
+            setQuoteData(data);
+        } catch (error) {
+            console.error('Error fetching quote', error);
+            setError('Could not get current price');
+        }
+    }
+
+    //  change quote when symbol changes
+    useEffect(() => {
+        if(order.symbol) {
+            const timeoutId = setTimeout(() => {
+                fetchStockQuote(order.symbol);
+            })
+            return () => clearTimeout(timeoutId)
+        }
+    }, [order.symbol]);
+
+    const handlePlaceOrder = async (e) => {
         e.preventDefault();
-        if (order.symbol && order.quantity) {
-            const total = calculateTotal();
-            setOrder(prev => ({ ...prev, total }));
+
+        if (!order.symbol || !order.quantity) {
+            setError('Please enter both symbol and quantity');
+            return;
+        }
+        //  get current quote
+        try {
+            await fetchStockQuote(order.symbol);
             setShowConfirmation(true);
+        } catch (error) {
+            setError('Could not get current price for this stock');
+        }
+    }
+
+    const handleConfirmOrder = async () => {
+        try {
+            setError(null);
+            const result = await executeTrade({
+                symbol: order.symbol,
+                quantity: parseInt(order.quantity),
+                action: order.action
+            });
+
+            setTradeResult(result.trade)
+            // Reset
+            setShowConfirmation(false)
+            setOrder({
+                symbol: '',
+                quantity: '',
+                action: 'BUY'
+            })
+        } catch (error) {
+            setError(error.message);
+            setShowConfirmation(false);
         }
     };
-
-    const handleConfirm = () => {
-        setShowConfirmation(false);
-    }
 
     return (
         <div className="dashboard-container">
@@ -57,9 +110,11 @@ const TradeView = () => {
                             className="help-button"
                             onClick={() => setShowHelp(!showHelp)}>help
                         </button>
+
+                        {error && <div className="error-message">{error}</div>}
                     </div>
 
-                    <form onSubmit={handleSubmit}>
+                    <form onSubmit={handlePlaceOrder}>
                         <input
                             type="text"
                             placeholder="Stock Symbol (e.g. AAPL)"
@@ -76,19 +131,19 @@ const TradeView = () => {
                             onChange={(e) => setOrder({...order, quantity: e.target.value})}
                         />
 
-                        <div className="total-display">Total transaction: ${calculateTotal()}</div>
+                        <div className="total-display">Total transaction: ${calculateTotal().toFixed(2)}</div>
 
                         <div className="trade-button">
                             <button 
                                 type="button"
-                                className="buy-button"
-                                onClick={() => setOrder({...order, type: 'buy'})}
+                                className={"buy-button"}
+                                onClick={() => setOrder({...order, action: 'BUY'})}
                                 > Buy
                             </button>
                             <button
                                 type="button"
                                 className="sell-button"
-                                onClick={() => setOrder({...order, type: 'sell'})}
+                                onClick={() => setOrder({...order, action: 'sell'})}
                                 >Sell
                             </button>
                         </div>
@@ -99,6 +154,17 @@ const TradeView = () => {
                         </button>
                     </form>
                 </div>
+
+                {tradeResult && (
+                    <div className="trade-result">
+                        <h3>Trade executed</h3>
+                        <p>You completed a {tradeResult.action} for {tradeResult.quantity} 
+                        shares of {tradeResult.symbol} at ${tradeResult.price.toFixed(2)}</p>
+                        <p>Total: ${tradeResult.total.toFixed(2)}</p>
+                    </div>
+                )}
+
+
 
                 {showHelp && (
                     <div className="help-content">
@@ -119,8 +185,8 @@ const TradeView = () => {
                         <div className="confirmation-content"> 
                             <h3>Confirm Transaction</h3>
                             <p>
-                                You are about to {order.type} {order.quantity} shares of {order.symbol} stock at 
-                                $234.00 each for a total of ${order.total}.
+                                You are about to {order.action.toLowerCase()} {order.quantity} shares of {order.symbol} stock at 
+                                ${quoteData?.price.toFixed(2)} each for a total of ${calculateTotal().toFixed(2)}.
                             </p>
                             <p className="warning">this cannot be undone</p>
                             <div className="confirmation-buttons">

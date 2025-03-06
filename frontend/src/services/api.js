@@ -1,4 +1,4 @@
-// Login Services
+//// LOGIN SERVICES
 // Login User
 export const loginUser = async (credentials) => {
     try {
@@ -23,7 +23,7 @@ export const loginUser = async (credentials) => {
     }
 }
 
-// Register User
+// register user
 export const registerUser = async (userData) => {
     try {
         const response = await fetch(`http://localhost:9000/api/users`, {
@@ -47,7 +47,7 @@ export const registerUser = async (userData) => {
 
 
 
-// Dashboard service
+//// DASHBOARD SERVICE
 export const fetchDashboard = async () => {
     try {
         const response = await fetch(`http://localhost:9001/dashboard`);
@@ -62,21 +62,61 @@ export const fetchDashboard = async () => {
 };
 
 
-// Market service
-export const fetchMarketData = async () => {
+//// MARKET SERVICE
+// Find stock
+export const searchStock = async(symbol) => {
     try {
-        console.log('Fetching market data...');
-        const response = await fetch(`http://localhost:9001/market`);
-        
-        if (!response.ok) {
-            throw new Error(`HTTP error! status: ${response.status}`);
-        }
-        
-        const data = await response.json();
-        console.log('Market data received:', data);
-        return data;
+        console.log('Searching for stock:', symbol);
+        const response = await fetch(`http://localhost:9002/market/search?symbol=${symbol}`);
+        if (!response.ok) throw new Error(`HTTP error. status ${response.status}`);
+        return await response.json()
     } catch (error) {
-        console.error('Error fetching market data:', error);
+        console.error('Search error:', error);
         throw error;
     }
-};
+}
+
+// GET favorites
+export const getFavorites = async () => {
+    try {
+        console.log('Fetching favorites')
+        const response = await fetch(`http://localhost:9002/market/favorites`);
+        if (!response.ok) throw new Error(`HTTP error. status ${response.status}`);
+        return await response.json()
+    } catch (error) {
+        console.error('Error getting favorites:', error);
+        throw error;
+    }
+}
+
+// POST favorites
+export const addFavorites = async (stock) => {
+    try {
+        console.log(`Add ${stock.symbol} to favorites`)
+        const response = await fetch(`http://localhost:9002/market/favorites`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(stock)
+        });
+        if (!response.ok) throw new Error(`HTTP error. status: ${response.status}`)
+        return await response.json()
+    } catch (error) {
+        console.error('Error adding to favorites', error);
+        throw error;
+    }
+}
+
+// DELETE favorites
+export const removeFavorite = async (symbol) => {
+    try {
+        console.log(`Removing ${symbol} from favorites`)
+        const response = await fetch(`http://localhost:9002/market/favorites/${symbol}`, {
+            method: 'DELETE'
+        });
+        if (!response.ok) throw new Error(`HTTP error. status: ${response.status}`)
+        return await response.json();
+    } catch (error) {
+        console.error('Error removing favorite:', error)
+        throw error;
+    }
+}

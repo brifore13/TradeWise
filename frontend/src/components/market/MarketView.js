@@ -1,43 +1,60 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { fetchMarketData } from "../../services/api"
+import { addFavorites, getFavorites, removeFavorite, searchStock } from "../../services/api";
 
 const MarketView = () => {
     const navigate = useNavigate();
-    const [stocks, setStocks] = useState([]);
-    const [loading, setLoading] = useState(true);
-    const [searchTerm, setSearchTerm] = useState("");  // Add this
+    const [searchTerm, setSearchTerm] = useState(""); 
     const [showHelp, setShowHelp] = useState(false);
     const [error, setError] = useState(null);
+    const [searchResult, setSearchResult] = useState(null);
+    const [favorites, setFavorites] = useState([]);
 
-    const handleSearch = () => {
-        // TODO: Implement search functionality
-        console.log("Searching for:", searchTerm);
+    // Search for stock
+    const handleSearch = async () => {
+        try {
+            const data = await searchStock(searchTerm);
+            setSearchResult(data);
+        } catch (error) {
+            console.error('Search failed:', error);
+            setError('Search failed');
+        }
     };
 
-    useEffect(() => {
-        const loadMarketData = async () => {
+    // Add to favorites
+    const handleAddFavorites = async () => {
+        if (searchResult) {
             try {
-                setLoading(true);
-                const data = await fetchMarketData();
-                setStocks(data);
-                console.log(data)
-                setError(null);
+                const updatedFavorites = await addFavorites(searchResult);
+                setFavorites(updatedFavorites);
             } catch (error) {
-                console.error('Error loading market data:', error);
-                setError('Failed to load market data');
-            } finally {
-                setLoading(false)
+                console.error('Failed to add to favorites', error)
             }
-        };
+        }
+    };
 
-        loadMarketData();
-        const interval = setInterval(loadMarketData, 60000);
-        return () => clearInterval(interval);
+    // Remove from favorites
+    const handleRemoveFavorite = async (symbol) => {
+        try {
+            const updatedFavorites = await removeFavorite(symbol);
+            setFavorites(updatedFavorites)
+        } catch (error) {
+            console.error('Failed to remove from favorites:', error)
+        }
+    };
+
+    // Load favorites
+    useEffect(() => {
+        const loadFavorites = async () => {
+            try {
+                const data = await getFavorites();
+                setFavorites(data);
+            } catch (error) {
+                console.error('Failed to load favorites', error)
+            }
+        }
+        loadFavorites();
     }, []);
-
-    if (loading) return <div>Loading market data...</div>;
-    if (error) return <div>Error: {error}</div>
 
 
     return (
@@ -57,8 +74,9 @@ const MarketView = () => {
                     </button>
                 </div>
             </nav>
+            <span>Search for stock by Symbol (ie. MSFT for Microsoft Corp)</span>
 
-
+                {/* Search Bar */}
                 <div className="search-container">
                     <input 
                         type="text"
@@ -77,25 +95,28 @@ const MarketView = () => {
                         >help
                     </button>
                 </div>
-
-                {showHelp && (
-                <div className="help-tooltip">
-                    <div className="help-section">
-                        <span className="help-title">Search Stocks:</span>
-                        <p>
-                            enter a Stock's symbol
-                            such as GOOG or a stock's name such as "Google" or "Alphabet Inc" to
-                            see the latest market data on a given stock. 
-                        </p>
-                        <p>Each holding will list the current price of one share, as well as the
-                        percentage of change in price for the current trading day.</p>
+                {/* Show search results */}
+                {searchResult && (
+                    <div className="search-result">
+                        <h2>Search Result</h2>
+                        <div className="stock-item">
+                            <div className="stock-info">
+                                <div className="stock-symbol">Symbol: {searchResult.symbol}</div>
+                            </div>
+                            <div className="stock-price">
+                                <div className="price">Price: ${parseFloat(searchResult.price).toFixed(2)}</div>
+                                <div className={`change ${parseFloat(searchResult.change) >= 0 ? 'positive' : 'negative'}`}>
+                                    {searchResult.change}
+                                </div>
+                            </div>
+                        <button className="enter-button"  onClick={handleAddFavorites}>Add to Favorites</button>
                     </div>
                 </div>
             )}
-
+                
                 <div className="market-data">
-                    <h2 className="section-title">Market Data</h2>
-                        {stocks.map(stock => (
+                    <h2 className="section-title">Favorite Stocks</h2>
+                        {favorites.map(stock => (
                         <div key={stock.symbol} className="stock-item">
                             <div className="stock-info">
                                 <div className="stock-symbol">{stock.symbol}</div>
@@ -103,13 +124,31 @@ const MarketView = () => {
                             </div>
                             <div className="stock-price">
                                 <div className="price">${parseFloat(stock.price).toFixed(2)}</div>
-                            <div className={`change ${parseFloat(stock.change) >= 0 ? 'positive' : 'negative'}`}>
-                                {stock.change_percent}
-                            </div>
+                                <div className={`change ${parseFloat(stock.change) >= 0 ? 'positive' : 'negative'}`}> {stock.change} </div>
                         </div>
+                        <button
+                            className="delete-button"
+                            onClick={handleRemoveFavorite}
+                            >Remove</button>
                     </div>
                 ))}
             </div>
+            {/* Help Button display */}
+            {showHelp && (
+                <div className="help-tooltip">
+                    <div className="help-section">
+                        <span className="help-title">Search Stocks:</span>
+                        <p>
+                            enter a Stock's symbol
+                            such as MSFT for Microsoft Corp to
+                            see the latest market data on a given stock. 
+                        </p>
+                        <p> You can save your favorite stocks for easy access by pressing 'Add to Favorite'</p>
+                        <p> Each holding will list the current price of one share, as well as the
+                            percentage of change in price from the previous trading day.</p>
+                    </div>
+                </div>
+            )}
         </div>
     )
 }

@@ -101,11 +101,11 @@ def login():
 
         email = data["email"].strip().lower()
 
-        # Validate user 
+        # Validate user
         if email in users and users[email]["password"] == data["password"]:
             token = generate_token(email)
-            tokens[email] = token 
-            save_json(tokens_file, tokens) 
+            tokens[email] = token
+            save_json(tokens_file, tokens)
 
             return jsonify({
                 "message": "Login successful",

@@ -128,7 +128,7 @@ const MarketView = () => {
                         </div>
                         <button
                             className="delete-button"
-                            onClick={handleRemoveFavorite}
+                            onClick={() => handleRemoveFavorite(stock.symbol)}
                             >Remove</button>
                     </div>
                 ))}

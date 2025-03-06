@@ -1,11 +1,13 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { fetchDashboard } from "../../services/api";
+import { getFavorites } from "../../services/api";
 
 const Dashboard = () => {
     const [showHelp, setShowHelp] = useState(false);
     const navigate = useNavigate();
     const [dashboardData, setDashboardData] = useState(null);
+    const [favorites, setFavorites] = useState([]);
 
     useEffect(() => {
         const loadData = async () => {
@@ -18,6 +20,20 @@ const Dashboard = () => {
         };
         loadData();
     }, []);
+
+    // Get market favorites
+    useEffect(() => {
+        const loadFavorites = async () => {
+            try {
+                const data = await getFavorites();
+                setFavorites(data);
+            } catch (error) {
+                console.error('Error loading favorites:', error)
+            }
+        };
+        loadFavorites();
+    }, []);
+
 
     if (!dashboardData) return <div>Loading...</div>;
 
@@ -66,19 +82,18 @@ const Dashboard = () => {
             <div className="grid-container">
                 {/* Market Summary */}
                 <div className="market-summary">
-                    <h2 className="section-title">Market Summary</h2>
-                    <div className="market-item">
-                        <span className="market-name">S&P 500</span>
-                        <span className="market-value positive-change">+0.2%</span>
-                    </div>
-                    <div className="market-item">
-                        <span className="market-name">Dow Jones</span>
-                        <span className="market-value" style={{'color': '#ef4444'}}>-1.5%</span>
-                    </div>
-                    <div className="market-item">
-                        <span className="market-name">NASDAQ</span>
-                        <span className="market-value positive-change">+0.89%</span>
-                    </div>
+                    <h2 className="section-title">Your Market Favorites</h2>
+                    {favorites.map(stock => (
+                        <div key={stock.symbol} className="market-item">
+                            <span className="market-name">{stock.symbol}</span>
+                            <span className={`market-value ${!stock.change.includes('-') ? 'positive' : 'negative'}`}>
+                                {stock.change}
+                            </span>
+
+                        </div>
+                    ))
+
+                    }
                 </div>
 
                 {/* Quick Trade */}

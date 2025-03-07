@@ -1,88 +1,74 @@
 import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { executeTrade } from "../../services/api";
+import { executeTrade, getStockQuote } from "../../services/api";
 
 
 const TradeView = () => {
     const navigate = useNavigate();
     const [showHelp, setShowHelp] = useState(false);
-    const [showConfirmation, setShowConfirmation] = useState(false);
+    const [stockData, setStockData] = useState(null);
+    const [totalPrice, setTotalPrice] = useState(null)
     const [tradeResult, setTradeResult] = useState(null);
     const [error, setError] = useState(null)
-    const [quoteData, setQuoteData] = useState(null);
     const [order, setOrder] = useState({
         symbol: '',
         quantity: '',
         action: 'BUY',
     });
 
-    const calculateTotal = () => {
-        const price = quoteData ? quoteData.price : 0;
-        return (parseFloat(order.quantity) || 0) * price;
-    }
-
-    //  fetch stock quote data
-    const fetchStockQuote = async(symbol) => {
-        if (!symbol) return;
-
+    //  Find Stock
+    const handleLocateStock = async () => {
         try {
             setError(null);
-            const data = await getStockQuote(symbol);
-            setQuoteData(data);
+            const data = await getStockQuote(order.symbol);
+            setStockData(data);
         } catch (error) {
-            console.error('Error fetching quote', error);
-            setError('Could not get current price');
+            setError('Stock not found');
+            setStockData('Search failed')
         }
     }
 
-    //  change quote when symbol changes
-    useEffect(() => {
-        if(order.symbol) {
-            const timeoutId = setTimeout(() => {
-                fetchStockQuote(order.symbol);
-            })
-            return () => clearTimeout(timeoutId)
-        }
-    }, [order.symbol]);
-
-    const handlePlaceOrder = async (e) => {
-        e.preventDefault();
-
-        if (!order.symbol || !order.quantity) {
-            setError('Please enter both symbol and quantity');
+    //  Calculate total price
+    const handleCalculateTotal = () => {
+        if (!stockData || !order.quantity) {
+            setError('Please enter quantity and stock');
             return;
         }
-        //  get current quote
-        try {
-            await fetchStockQuote(order.symbol);
-            setShowConfirmation(true);
-        } catch (error) {
-            setError('Could not get current price for this stock');
-        }
+        const total = parseFloat(stockData.price) * parseInt(order.quantity);
+        setTotalPrice(total);
     }
 
-    const handleConfirmOrder = async () => {
+    // execute trade
+    const handleExecuteTrade = async () => {
+        if (!stockData || !order.quantity || totalPrice === null) {
+            setError('Calculate total price first')
+            return;
+        }
         try {
             setError(null);
             const result = await executeTrade({
                 symbol: order.symbol,
                 quantity: parseInt(order.quantity),
-                action: order.action
+                action: order.action,
+                price: parseFloat(stockData.price),
+                totalPrice: totalPrice
             });
 
-            setTradeResult(result.trade)
-            // Reset
-            setShowConfirmation(false)
+            setTradeResult(result.trade);
+
+            // reset form
             setOrder({
                 symbol: '',
                 quantity: '',
                 action: 'BUY'
-            })
+            });
+            setStockData(null)
+            setTotalPrice(null)
+
         } catch (error) {
-            setError(error.message);
-            setShowConfirmation(false);
+            setError('Failed to execute trade: ' + error.message);
         }
-    };
+    }
 
     return (
         <div className="dashboard-container">
@@ -114,53 +100,95 @@ const TradeView = () => {
                         {error && <div className="error-message">{error}</div>}
                     </div>
 
-                    <form onSubmit={handlePlaceOrder}>
+                    {/* Stock symbol search */}
+                    <div className="input-row">
                         <input
                             type="text"
                             placeholder="Stock Symbol (e.g. AAPL)"
                             className="input-field"
                             value={order.symbol}
-                            onChange={(e) => setOrder({...order, symbol: e.target.value})}
+                            onChange={(e) => setOrder({...order, symbol: e.target.value.toUpperCase()})}
                         />
-                        <input 
-                            type="number"
-                            min="0"
-                            placeholder="Quantity"
-                            className="input-field"
-                            value={order.quantity}
-                            onChange={(e) => setOrder({...order, quantity: e.target.value})}
-                        />
-
-                        <div className="total-display">Total transaction: ${calculateTotal().toFixed(2)}</div>
-
-                        <div className="trade-button">
-                            <button 
-                                type="button"
-                                className={"buy-button"}
-                                onClick={() => setOrder({...order, action: 'BUY'})}
-                                > Buy
-                            </button>
-                            <button
-                                type="button"
-                                className="sell-button"
-                                onClick={() => setOrder({...order, action: 'sell'})}
-                                >Sell
-                            </button>
-                        </div>
-
                         <button
-                            type="submit" className="place-order-button"
-                            >Place Order
+                            type="button"
+                            className="buy-button"
+                            onClick={handleLocateStock}
+                        >
+                            Locate Stock
                         </button>
-                    </form>
-                </div>
+                    </div>
 
+                    {/* Display Stock info */}
+                    {stockData && (
+                        <div className="stock-info">
+                            <div className="stock-name">{order.symbol}</div>
+                            <div className="stock-price">Price: ${parseFloat(stockData.price).toFixed(2)}</div>
+                            <div className={`stock-change ${parseFloat(stockData.change) >= 0 ? 'positive' : 'negative'}`}>
+                                Change: {stockData.change}
+                            </div>
+                        </div>
+                    )}
+
+                    {/* Quantity Input */}
+                <div className="input-row">
+                    <input
+                        type="number"
+                        placeholder="Quantity"
+                        className="input-field"
+                        value={order.quantity}
+                        onChange={(e) => setOrder({...order, quantity: e.target.value})}
+                        disabled={!stockData}
+                    />
+                    <button 
+                        type="button" 
+                        className="action-button" 
+                        onClick={handleCalculateTotal}
+                        disabled={!stockData || !order.quantity}
+                    >
+                        Calculate Total
+                    </button>
+                </div>
+                
+                {/* Display Total */}
+                {totalPrice !== null && (
+                    <div className="total-price">
+                        Total Price: ${totalPrice.toFixed(2)}
+                    </div>
+                )}
+                
+                {/* Buy/Sell Buttons */}
+                <div className="action-buttons">
+                    <button
+                        type="button"
+                        className={`trade-action ${order.action === 'BUY' ? 'buy-button' : ''}`}
+                        onClick={() => setOrder({...order, action: 'BUY'})}
+                    >
+                        Buy
+                    </button>
+                    <button
+                        type="button"
+                        className={`trade-action ${order.action === 'SELL' ? 'sell-button' : ''}`}
+                        onClick={() => setOrder({...order, action: 'SELL'})}
+                    >
+                        Sell
+                    </button>
+                </div>
+                
+                {/* Place Order Button */}
+                <button 
+                    type="button" 
+                    className="place-order-button"
+                    onClick={handleExecuteTrade}
+                    disabled={totalPrice === null}
+                >
+                    Place Order
+                </button>
+                
+                {/* Trade Result */}
                 {tradeResult && (
                     <div className="trade-result">
-                        <h3>Trade executed</h3>
-                        <p>You completed a {tradeResult.action} for {tradeResult.quantity} 
-                        shares of {tradeResult.symbol} at ${tradeResult.price.toFixed(2)}</p>
-                        <p>Total: ${tradeResult.total.toFixed(2)}</p>
+                        <h3>Order Executed Successfully</h3>
+                        <p>You created a {tradeResult.action.toLowerCase()} order of {tradeResult.quantity} shares of {tradeResult.symbol} for a total of ${tradeResult.total.toFixed(2)}.</p>
                     </div>
                 )}
 
@@ -179,27 +207,10 @@ const TradeView = () => {
                         </ol>
                     </div>
                 )}
-
-                {showConfirmation && (
-                    <div className="confirmation-display">
-                        <div className="confirmation-content"> 
-                            <h3>Confirm Transaction</h3>
-                            <p>
-                                You are about to {order.action.toLowerCase()} {order.quantity} shares of {order.symbol} stock at 
-                                ${quoteData?.price.toFixed(2)} each for a total of ${calculateTotal().toFixed(2)}.
-                            </p>
-                            <p className="warning">this cannot be undone</p>
-                            <div className="confirmation-buttons">
-                                <button className="confirm-button" onClick={handleConfirm}>Confirm</button>
-                                <button className="cancel-button" onClick={() => setShowConfirmation(false)}>Cancel</button>
-                            </div>
-                        </div>
-                    </div>
-                )}
             </div>
         </div>
+        </div>
     )
-
 }
 
-export default TradeView
+export default TradeView;

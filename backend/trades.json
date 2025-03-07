@@ -1,0 +1,18 @@
+[
+    {
+        "symbol": "GOOG",
+        "quantity": 4,
+        "action": "BUY",
+        "price": 174.21,
+        "total": 696.84,
+        "timestamp": "2025-03-06T19:55:28.932223"
+    },
+    {
+        "symbol": "NKE",
+        "quantity": 6,
+        "action": "BUY",
+        "price": 77.71,
+        "total": 466.26,
+        "timestamp": "2025-03-06T19:57:01.872285"
+    }
+]

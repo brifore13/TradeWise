@@ -123,19 +123,34 @@ export const removeFavorite = async (symbol) => {
 
 
 //// TRADING
+// GET stock price
+export const getStockQuote = async (symbol) => {
+    try {
+        console.log(`Getting quote for ${symbol}`)
+        const response = await fetch(`http://localhost:9003/trading/quote?symbol=${symbol}`);
+        if (!response.ok) {
+            throw new Error(`HTTP error. status ${response.status}`);
+        }
+        return await response.json();
+    } catch (error) {
+        console.error('Error fetching stock quote', error);
+        throw error;
+    }
+}
+
+
 // POST Execute trade
-export const executeTrade = async (tradData) => {
+export const executeTrade = async (tradeData) => {
     try {
         console.log(`Executing ${tradeData.action} order for ${tradeData.quantity}`)
-        const response = await fetch('https://localhost:9003/trading/execute', {
+        const response = await fetch('http://localhost:9003/trading/execute', {
             method: 'POST',
             headers: {'Content-Type': 'application/json'},
-            body: JSON.stringify(tradData)
+            body: JSON.stringify(tradeData)
         });
 
         if (!response.ok) {
-            const errorData = await response.json()
-            throw new Error(errorData.error || `HTTP error. status: ${response.status}`)
+            throw new Error(`HTTP error. status: ${response.status}`)
         }
         return await response.json();
     } catch (error) {

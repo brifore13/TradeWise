@@ -4,7 +4,7 @@ import json
 import os
 import requests
 
-app = Flask(app)
+app = Flask(__name__)
 CORS(app)
 
 # Store trades
@@ -14,7 +14,7 @@ TRADE_FILE = 'trades.json'
 API_KEY = 'YERZJPFR070E43GC'
 BASE_URL = 'https://www.alphavantage.co/query'
 
-# create trade file
+# create JSON file
 if not os.path.exists(TRADE_FILE):
     with open(TRADE_FILE, 'w') as f:
         json.dump([], f)
@@ -31,6 +31,31 @@ def save_trades(trades):
     with open(TRADE_FILE, 'w') as f:
         json.dump(trades, f, indent=4)
 
+# Get stock price
+@app.route('/trading/quote', methods=['GET'])
+def get_stock_quote():
+    symbol = request.args.get('symbol', '').upper()
+
+    params = {
+        'function': 'GLOBAL_QUOTE',
+        'symbol': symbol,
+        'apikey': API_KEY
+    }
+
+    response = requests.get(BASE_URL, params=params)
+    data = response.json()
+
+    if 'Global Quote' in data:
+        quote = data['Global Quote']
+        result = {
+            'symbol': symbol,
+            'price': quote['05. price'],
+            'change': quote['10. change percent']
+        }
+        return jsonify(result)
+    else:
+        return jsonify({'error': 'Stock not found'})
+
 
 # Execute trade
 @app.route('/trading/execute', methods=['POST'])
@@ -39,37 +64,17 @@ def execute_trade():
         trade_data = request.json
 
         # validate trade
-        required_fields = ['symbol', 'quantity', 'action']
+        required_fields = ['symbol', 'quantity', 'action', 'price']
         if not all(field in trade_data for field in required_fields):
             return jsonify({'error': 'Missing required trade info'}), 400
         
-        symbol = trade_data['symbol'].upper()
-        quantity = int(trade_data['quantity'])
-        action = trade_data['action'].upper()
-
-        # get current stock price
-        params = {
-            'function': 'GLOBAL_QUOTE',
-            'symbol': symbol,
-            'apikey': API_KEY
-        }
-
-        response = requests.get(BASE_URL, params=params)
-        price_data = response.json()
-
-        if 'Global Quote' not in price_data:
-            return jsonify({'error': 'Stock not found'}), 404
-        
-        price = float(price_data['Global Quote']['05. price'])
-        total_value = price * quantity
-
-        # record trade
+        # Create trade record
         trade_record = {
-            'symbol': symbol,
-            'quantity': quantity,
-            'action': action,
-            'price': price,
-            'total': total_value,
+            'symbol': trade_data['symbol'],
+            'quantity': trade_data['quantity'],
+            'action': trade_data['action'],
+            'price': float(trade_data['price']),
+            'total': float(trade_data['price']) * int(trade_data['quantity']),
             'timestamp': import_time()
         }
 
@@ -78,6 +83,7 @@ def execute_trade():
         trades.append(trade_record)
         save_trades(trades)
 
+        print(f"Trade executed: {trade_record}")
         return jsonify({
             'success': True,
             'trade': trade_record

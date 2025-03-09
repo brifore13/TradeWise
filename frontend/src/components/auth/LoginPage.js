@@ -159,7 +159,7 @@ const LoginPage = () => {
                     setIsLogin(true);
                     setError('');
                   }}
-                >login</span>
+                > login</span>
               </div>
               </>
             )}

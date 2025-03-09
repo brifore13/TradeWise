@@ -1,16 +1,22 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { fetchDashboard } from "../../services/api";
-import { getFavorites } from "../../services/api";
+import { fetchDashboard, getFavorites } from "../../services/api";
 
 const Dashboard = () => {
     const [showHelp, setShowHelp] = useState(false);
     const navigate = useNavigate();
-    const [dashboardData, setDashboardData] = useState(null);
+    const [dashboardData, setDashboardData] = useState({
+        portfolio: {
+            totalValue: 0,
+            todaysChange: 0,
+            holdings: []
+        },
+        marketSummary: {}
+    });
     const [favorites, setFavorites] = useState([]);
 
     useEffect(() => {
-        const loadData = async () => {
+        const loadDashboardData = async () => {
             try {
                 const data = await fetchDashboard();
                 setDashboardData(data);
@@ -18,7 +24,7 @@ const Dashboard = () => {
                 console.error('Error loading dashboard:', error);
             }
         };
-        loadData();
+        loadDashboardData();
     }, []);
 
     // Get market favorites
@@ -67,11 +73,16 @@ const Dashboard = () => {
                 <div className="values-container">
                     <div className="value-item">
                         <div className="value-label">Total Value</div>
-                        <div className="value-amount">$3973.09</div>
+                        <div className="value-amount">
+                            ${dashboardData.portfolio.totalValue.toFixed(2)}
+                        </div>
                     </div>
                     <div className="value-item">
-                        <div className="value-label">Today's Change</div>
-                        <div className="value-amount positive-change">+215.67</div>
+                        <div className="value-label">Change over Time</div>
+                        <div className={`value-amount ${dashboardData.portfolio.todaysChange >= 0 ? 'positive' : 'negative'}`}>
+                            {dashboardData.portfolio.todaysChange >= 0 ? '+' : ''}
+                            ${Math.abs(dashboardData.portfolio.todaysChange).toFixed(2)}
+                        </div>
                     </div>
                 </div>
             </div>

@@ -1,20 +1,42 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
+import { getPortfolioSummary } from "../../services/api";
 
 const PortfolioView = () => {
     const [showHelp, setShowHelp] = useState(false);
     const navigate = useNavigate();
+    const [portfolio, setPortfolio] = useState({
+        totalValue: 0,
+        totalAssetValue: 0,
+        cash: 0,
+        holdings: []
+    });
+    const [loading, setLoading] = useState(true);
+    const [error, setError] = useState(null);
 
 
-    const portfolio = {
-        totalValue: 3973.09,
-        totalProfitLoss: 687.51,
-        holdings: [
-            { symbol: 'GOOG', shares: 5, value: 1005.45, profitloss: 289.45},
-            { symbol: 'AAPL', shares: 12, value: 2673.36, profitloss: 450.51},
-            { symbol: 'NKE', shares: 4, value: 294.28, profitloss: -52.45}
-        ]
-    };
+// fetch portfolio component
+    useEffect(() => {
+        fetchPortfolioData();
+    }, []);
+
+    const fetchPortfolioData = async () => {
+        try {
+            setLoading(true);
+            setError(null);
+            const data = await getPortfolioSummary();
+            setPortfolio(data);
+        } catch (err) {
+            setError('Failed to load portfolio data');
+            console.error(err);
+        } finally {
+            setLoading(false);
+        }
+    }
+
+    // Calculate profit/loss
+    const totalProfitLoss = portfolio.holdings.reduce((total, holding) => total + holding.profitLoss, 0)
+
 
     return (
         <div className="portfolio-container">
@@ -36,7 +58,10 @@ const PortfolioView = () => {
             <div className="portfolio-summary">
                 <div className="summary-header">
                     <h2 className="section-title">Portfolio Summary</h2>
-                    <button className="help-button" onClick={() => setShowHelp(!showHelp)}>help</button>
+                    <div className="action-buttons">
+                        <button className="help-button" onClick={() => setShowHelp(!showHelp)}>help</button>
+                        <button className="refresh-button" onClick={fetchPortfolioData}>refresh</button>
+                    </div>
                 </div>
                 <div className="summary-content">
                     <div>
@@ -44,9 +69,17 @@ const PortfolioView = () => {
                         <div className="value-amount">${portfolio.totalValue.toFixed(2)}</div>
                     </div>
                     <div>
+                        <div className="value-label">Cash Available</div>
+                        <div className="value-amount">${portfolio.cash.toFixed(2)}</div>
+                    </div>
+                    <div>
+                        <div className="value-label">Asset Value</div>
+                        <div className="value-amount">${portfolio.totalAssetValue.toFixed(2)}</div>
+                    </div>
+                    <div>
                         <div className="value-label">Total Profit/Loss</div>
-                        <div className={`value-amount ${portfolio.totalProfitLoss >= 0 ? 'positive' : 'negative'}`}>
-                            {portfolio.totalProfitLoss >= 0 ? '+' : ''}{portfolio.totalProfitLoss.toFixed(2)}
+                        <div className={`value-amount ${totalProfitLoss >= 0 ? 'positive' : 'negative'}`}>
+                                {totalProfitLoss >= 0 ? '+' : ''}{totalProfitLoss.toFixed(2)}
                         </div>
                     </div>
                 </div>
@@ -70,27 +103,29 @@ const PortfolioView = () => {
 
             <div className="holdings-container">
                 <h2 className="section-title">Your Holdings</h2>
-                {portfolio.holdings.map(holding => (
-                    <div key={holding.symbol} className="stock-item">
-                        <div className="stock-info">
-                            <div className="stock-symbol">{holding.symbol}</div>
-                            <div className="shares-count">{holding.shares} shares</div>
-                        </div>
-                        <div className="stock-price">
-                            <div className="value">${holding.value.toFixed(2)}</div>
-                            <div className={`profit-loss ${holding.profitloss >= 0 ? 'positive' : 'negative'}`}>
-                                {holding.profitloss >= 0 ? '+' : ''}{holding.profitloss.toFixed(2)}
-                            </div>
-                        </div>
-                    </div>
-
-                ))}
-            </div>
+                {portfolio.holdings.length === 0 ? (
+                            <div className="no-holdings">You don't have any holdings yet. Visit the Trading page to buy stocks.</div>
+                        ) : (
+                            portfolio.holdings.map(holding => (
+                                <div key={holding.symbol} className="stock-item">
+                                    <div className="stock-info">
+                                        <div className="stock-symbol">{holding.symbol}</div>
+                                        <div className="shares-count">{holding.shares} shares</div>
+                                        <div className="current-price">Current Price: ${holding.currentPrice.toFixed(2)}</div>
+                                    </div>
+                                    <div className="stock-price">
+                                        <div className="value">Value: ${holding.currentValue.toFixed(2)}</div>
+                                        <div className="cost-basis">Cost Basis: ${holding.costBasis.toFixed(2)}</div>
+                                        <div className={`profit-loss ${holding.profitLoss >= 0 ? 'positive' : 'negative'}`}>
+                                            {holding.profitLoss >= 0 ? '+' : ''}{holding.profitLoss.toFixed(2)}
+                                        </div>
+                                    </div>
+                                </div>
+                            ))
+                        )}
+                </div>
         </div>
-
     )
-
-
 }
 
 export default PortfolioView;

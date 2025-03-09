@@ -120,3 +120,55 @@ export const removeFavorite = async (symbol) => {
         throw error;
     }
 }
+
+
+//// TRADING
+// GET stock price
+export const getStockQuote = async (symbol) => {
+    try {
+        console.log(`Getting quote for ${symbol}`)
+        const response = await fetch(`http://localhost:9003/trading/quote?symbol=${symbol}`);
+        if (!response.ok) {
+            throw new Error(`HTTP error. status ${response.status}`);
+        }
+        return await response.json();
+    } catch (error) {
+        console.error('Error fetching stock quote', error);
+        throw error;
+    }
+}
+
+
+// POST Execute trade
+export const executeTrade = async (tradeData) => {
+    try {
+        console.log(`Executing ${tradeData.action} order for ${tradeData.quantity}`)
+        const response = await fetch('http://localhost:9003/trading/execute', {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify(tradeData)
+        });
+
+        if (!response.ok) {
+            throw new Error(`HTTP error. status: ${response.status}`)
+        }
+        return await response.json();
+    } catch (error) {
+        console.error('Error executing trade:', error);
+        throw error;
+    }
+}
+
+// GET trade history
+export const getTradHistory = async () => {
+    try {
+        const response = await fetch('http://localhost:9003/trading/history');
+        if (!response.ok) {
+            throw new Error(`HTTP error. status ${response.status}`);
+        }
+        return await response.json();
+    } catch (error) {
+        console.error('Error fetching trade history', error)
+        throw error;
+    }
+}

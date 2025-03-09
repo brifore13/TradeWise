@@ -35,8 +35,6 @@ const Dashboard = () => {
     }, []);
 
 
-    if (!dashboardData) return <div>Loading...</div>;
-
     return (
         <div className="dashboard-container">
             {/* Navigation */}

@@ -3,5 +3,10 @@
         "firstName": "new",
         "lastName": "user",
         "password": "Password1!"
+    },
+    "brij@gmail.com": {
+        "firstName": "Bri",
+        "lastName": "Johnson",
+        "password": "Password2!"
     }
 }

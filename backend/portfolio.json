@@ -1,0 +1,50 @@
+{
+    "cash": 309.8699999999973,
+    "assets": [
+        {
+            "symbol": "AAPL",
+            "shares": 17,
+            "costBasis": 2936.1400000000003,
+            "perShareCost": 172.71411764705886,
+            "currentPrice": 175.28,
+            "currentValue": 2979.76,
+            "profitLoss": 43.61999999999989
+        },
+        {
+            "symbol": "GOOG",
+            "shares": 15,
+            "costBasis": 2700.77,
+            "perShareCost": 180.05133333333333,
+            "currentPrice": 182.45,
+            "currentValue": 2736.75,
+            "profitLoss": 35.98000000000002
+        },
+        {
+            "symbol": "NKE",
+            "shares": 25,
+            "costBasis": 2003.5500000000002,
+            "perShareCost": 80.14200000000001,
+            "currentPrice": 84.92,
+            "currentValue": 2123.0,
+            "profitLoss": 119.44999999999982
+        },
+        {
+            "symbol": "PLTR",
+            "shares": 45,
+            "costBasis": 1077.31,
+            "perShareCost": 23.94022222222222,
+            "currentPrice": 25.78,
+            "currentValue": 1160.1000000000001,
+            "profitLoss": 82.79000000000019
+        },
+        {
+            "symbol": "META",
+            "shares": 2,
+            "costBasis": 972.36,
+            "perShareCost": 486.18,
+            "currentPrice": 486.18,
+            "currentValue": 972.36,
+            "profitLoss": 0.0
+        }
+    ]
+}

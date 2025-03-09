@@ -160,7 +160,7 @@ export const executeTrade = async (tradeData) => {
 }
 
 // GET trade history
-export const getTradHistory = async () => {
+export const getTradeHistory = async () => {
     try {
         const response = await fetch('http://localhost:9003/trading/history');
         if (!response.ok) {
@@ -172,3 +172,19 @@ export const getTradHistory = async () => {
         throw error;
     }
 }
+
+//// PORTFOLIO 
+// Get portfolio summary
+export const getPortfolioSummary = async () => {
+    try {
+        const response = await fetch('http://localhost:9004/portfolio/summary');
+        if (!response.ok) {
+            throw new Error('Failed to fetch portfolio data');
+        }
+        const data = await response.json()
+        return data
+    } catch (error) {
+        console.error('Error getting portfolio summary:', error);
+        throw error;
+    }
+};

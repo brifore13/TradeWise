@@ -7,11 +7,12 @@ import requests
 app = Flask(__name__)
 CORS(app)
 
-# Store trades
+# JSON files
 TRADE_FILE = 'trades.json'
+MOCK_DATA_FILE = 'alpha_vantage_mock_data.json'
 
 # Alpha Vantage API
-API_KEY = 'YERZJPFR070E43GC'
+API_KEY = 'K1U3DXHG00VLITUG'
 BASE_URL = 'https://www.alphavantage.co/query'
 
 # create JSON file
@@ -31,22 +32,22 @@ def save_trades(trades):
     with open(TRADE_FILE, 'w') as f:
         json.dump(trades, f, indent=4)
 
+
+# load mock data
+def load_mock_data():
+    if os.path.exists(MOCK_DATA_FILE):
+        with open(MOCK_DATA_FILE, 'r') as f:
+            return json.load(f)
+
 # Get stock price
 @app.route('/trading/quote', methods=['GET'])
 def get_stock_quote():
     symbol = request.args.get('symbol', '').upper()
 
-    params = {
-        'function': 'GLOBAL_QUOTE',
-        'symbol': symbol,
-        'apikey': API_KEY
-    }
+    mock_data = load_mock_data()
 
-    response = requests.get(BASE_URL, params=params)
-    data = response.json()
-
-    if 'Global Quote' in data:
-        quote = data['Global Quote']
+    if symbol in mock_data and 'Global Quote' in mock_data[symbol]:
+        quote = mock_data[symbol]['Global Quote']
         result = {
             'symbol': symbol,
             'price': quote['05. price'],
@@ -111,5 +112,5 @@ def import_time():
 
 
 if __name__ == '__main__':
-    print("Trading service running on port 9003")
+    print("Trading service running on PORT 9003")
     app.run(host='127.0.0.1', port=9003, debug=True)

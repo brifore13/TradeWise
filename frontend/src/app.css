@@ -1,7 +1,3 @@
-@import 'tailwindcss/base';
-@import 'tailwindcss/components';
-@import 'tailwindcss/utilities';
-
 body {
   margin: 0;
   font-family: "Montserrat", serif;
@@ -322,9 +318,9 @@ body {
 }
 
 .enter-button {
-  background: #3f4c3d;
+  background: #6f8f6a;
   color: white;
-  border: solid black 1px;
+  border: solid white 1px;
   padding: 10px 40px;
   border-radius: 4px;
   cursor: pointer;
@@ -400,7 +396,7 @@ body {
 .summary-content {
   display: flex;
   justify-content: space-between;
-  padding: 0 200px;
+  padding: 0 100px;
 }
 
 .value-label {
@@ -687,4 +683,18 @@ body {
   background-color: #f0fdf4;
   border: 1px solid #22c55e;
   border-radius: 4px;
+}
+
+.help-button, .reset-button, .refresh-button, .delete-button {
+  background-color: #3f4c3d;
+  border: white 1px solid;
+  color: white;
+  padding: 8px 15px;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 14px;
+}
+
+.reset-button {
+  background-color: #e74c3c;
 }

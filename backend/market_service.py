@@ -8,29 +8,12 @@ app = Flask(__name__)
 CORS(app)
 
 # alpha vantage API
-API_KEY = 'YERZJPFR070E43GC'
+API_KEY = 'K1U3DXHG00VLITUG'
 BASE_URL = 'https://www.alphavantage.co/query'
 
-# https://www.alphavantage.co/query?function=GLOBAL_QUOTE&symbol=IBM&apikey=demo
-"""
-{
-    "Global Quote": {
-        "01. symbol": "IBM",
-        "02. open": "263.8450",
-        "03. high": "264.8300",
-        "04. low": "261.1000",
-        "05. price": "261.4800",
-        "06. volume": "5667874",
-        "07. latest trading day": "2025-02-21",
-        "08. previous close": "264.7400",
-        "09. change": "-3.2600",
-        "10. change percent": "-1.2314%"
-    }
-}
-"""
-
-# Store favorite stocks
+# JSON files
 FAVORITES_FILE = 'favorites.json'
+MOCK_DATA_FILE = 'alpha_vantage_mock_data.json'
 
 # create JSON file
 if not os.path.exists(FAVORITES_FILE):
@@ -52,23 +35,22 @@ def save_favorites(favorites):
         json.dump(favorites, f, indent=4)
 
 
+# load mock data
+def load_mock_data():
+    if os.path.exists(MOCK_DATA_FILE):
+        with open(MOCK_DATA_FILE, 'r') as f:
+            return json.load(f)
+
+
 # Search for stocks
 @app.route('/market/search', methods=['GET'])
 def search_stock():
     symbol = request.args.get('symbol', '').upper()
-    # get stock quotes from alpha vantage API
-    params = {
-        'function': 'GLOBAL_QUOTE',
-        'symbol': symbol,
-        'apikey': API_KEY
-    }
-
-    response = requests.get(BASE_URL, params=params)
-    data = response.json()
+    mock_data = load_mock_data()
 
     # get stock data
-    if 'Global Quote' in data:
-        quote = data['Global Quote']
+    if symbol in mock_data and 'Global Quote' in mock_data[symbol]:
+        quote = mock_data[symbol]['Global Quote']
         result = {
             'symbol': symbol,
             'price': quote['05. price'],
@@ -118,5 +100,5 @@ def remove_favorites(symbol):
 
 
 if __name__ == '__main__':
-    print("Market service running on port 9002")
+    print("Market service running on PORT 9002")
     app.run(host='127.0.0.1', port=9002, debug=True)

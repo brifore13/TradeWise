@@ -132,4 +132,5 @@ def logout():
     return jsonify({"redirect": "/"})
 
 if __name__ == "__main__":
+    print('Login service running on PORT 9000')
     app.run(host='127.0.0.1', port=9000, debug=True)

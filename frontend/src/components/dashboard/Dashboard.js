@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { fetchDashboard, getFavorites } from "../../services/api";
+import { fetchDashboard, getFavorites, getTradeHistory } from "../../services/api";
 
 const Dashboard = () => {
     const [showHelp, setShowHelp] = useState(false);
@@ -14,6 +14,7 @@ const Dashboard = () => {
         marketSummary: {}
     });
     const [favorites, setFavorites] = useState([]);
+    const [recentTrade, setRecentTrade] = useState(null)
 
     useEffect(() => {
         const loadDashboardData = async () => {
@@ -39,6 +40,25 @@ const Dashboard = () => {
         };
         loadFavorites();
     }, []);
+
+    // Get recent trade
+    useEffect(() => {
+        const loadRecentTrade = async () => {
+            try {
+                const trades = await getTradeHistory();
+                // sort trade by most recent
+                if (trades && trades.length > 0) {
+                    const sortedTrades = [...trades].sort((a, b) =>
+                        new Date(b.timestamp) - new Date(a.timestamp)
+                    );
+                    setRecentTrade(sortedTrades[0]);
+                }
+            } catch (error) {
+                console.error('Error loading trade history:', error);
+            }
+        };
+        loadRecentTrade();
+    }, [])
 
 
     return (
@@ -78,7 +98,7 @@ const Dashboard = () => {
                         </div>
                     </div>
                     <div className="value-item">
-                        <div className="value-label">Change over Time</div>
+                        <div className="value-label">Today's Change</div>
                         <div className={`value-amount ${dashboardData.portfolio.todaysChange >= 0 ? 'positive' : 'negative'}`}>
                             {dashboardData.portfolio.todaysChange >= 0 ? '+' : ''}
                             ${Math.abs(dashboardData.portfolio.todaysChange).toFixed(2)}
@@ -105,11 +125,37 @@ const Dashboard = () => {
                     }
                 </div>
 
-                {/* Quick Trade */}
-                <div className="quick-trade">
-                    <h2 className="section-title">Quick Trade</h2>
-                    <button className="trade-buttons buy-button">Buy</button>
-                    <button className="trade-buttons sell-button">Sell</button>
+                {/* Most Recent Trade */}
+                <div className="grid-container">
+                    {recentTrade ? (
+                        <div className="market-summary">
+                            <h2 className="section-title">Most Recent Trade</h2>
+                            <div className="trade-row">
+                                <span className="market-name">Action:</span>
+                                <span className={`market-value ${recentTrade.action === 'BUY' ? 'buy-text' : 'sell-text'}`}>
+                                    {recentTrade.action}
+                                </span>
+                            </div>
+                            <div className="trade-row">
+                                <span className="market-name">Symbol:</span>
+                                <span className="market-value">{recentTrade.symbol}</span>
+                            </div>
+                            <div className="trade-row">
+                                <span className="market-name">Quantity:</span>
+                                <span className="market-value">{recentTrade.quantity} shares</span>
+                            </div>
+                            <div className="trade-row">
+                                <span className="market-name">Price:</span>
+                                <span className="market-value">${parseFloat(recentTrade.price).toFixed(2)}</span>
+                            </div>
+                            <div className="trade-row">
+                                <span className="market-name">Total:</span>
+                                <span className="market-value">${parseFloat(recentTrade.total).toFixed(2)}</span>
+                            </div>
+                        </div>
+                    ) : (
+                        <div className="no-trades">No trades recorded yet. Visit the Trading page to make your first trade.</div>
+                    )}
                 </div>
             </div>
 

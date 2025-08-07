@@ -1,4 +1,4 @@
-Portfolio Project: TradeWise
+TradeWise
 About: Web Based Trading App
 Target Market: High-net worth female investors who are statistically more risk averse than their male counterparts.
 
@@ -12,5 +12,6 @@ Consisting of 5 microservices
 Project Stack:
 1. Frontend: React, JSX, CSS
 2. Backend: Python Flask Microservices
-3. Infrastructure: Microservices Architecture
-4. Services Communication: HTTP requests
+3. APIs: Alpha Vantage
+4. Infrastructure: Microservices Architecture
+5. Services Communication: HTTP requests

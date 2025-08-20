@@ -71,7 +71,7 @@ const userSchema = new mongoose.Schema({
     lastName: {
         type: String,
         required: [true, 'Last name is required'],
-        trime: true,
+        trim: true,
         maxlength: [50, 'Last name cannot exceed 50 characters']
     },
     email: {
@@ -237,4 +237,4 @@ userSchema.methods.cleanupRefreshTokens = function() {
 });
 };
   
-  module.exports = mongoose.model('User', userSchema);
+export default mongoose.model('User', userSchema);

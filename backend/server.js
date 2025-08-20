@@ -1,6 +1,7 @@
 import express from 'express';
 import mongoose from 'mongoose';
 import dotenv from 'dotenv';
+import User from './models/User.js';
 
 // Load environment variables
 dotenv.config();
@@ -103,6 +104,36 @@ app.get('/health', async (req, res) => {
     res.status(500).json({
       status: 'ERROR',
       message: 'Database health check failed',
+      error: error.message
+    });
+  }
+});
+
+// Test endpoint to create a user
+app.post('/test-user', async (req, res) => {
+  try {
+    const testUser = new User({
+      firstName: 'Test',
+      lastName: 'User',
+      email: 'test@tradewise.com',
+      password: 'TestPassword123!'
+    });
+
+    await testUser.save();
+
+    res.json({
+      success: true,
+      message: 'Test user created successfully!',
+      user: {
+        id: testUser._id,
+        name: testUser.fullName,
+        email: testUser.email,
+        portfolio: testUser.portfolio
+      }
+    });
+  } catch (error) {
+    res.status(400).json({
+      success: false,
       error: error.message
     });
   }

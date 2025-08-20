@@ -105,3 +105,86 @@ router.post('/register', async(req, res) => {
         });
     }
 });
+
+// @route   POST /api/auth/login
+// @desc    Login user
+// @access Public
+router.post('/login', async (req, res) => {
+    try {
+        const { email, password } = req.body;
+
+        // validation
+        if (!email || !password) {
+            return res.status(400).json({
+              success: false,
+              message: 'Email and password are required'
+            });
+          }
+      
+          if (!validateEmail(email)) {
+            return res.status(400).json({
+              success: false,
+              message: 'Please provide a valid email address'
+            });
+          }
+
+        // find user with password field
+        const user =  await User.findOne({ email: email.toLowerCase()}).select('+password');
+
+        if (!user) {
+            return res.status(401).json({
+                success: false,
+                message: 'Invalid email or password'
+            })
+        }
+
+        // check if active account
+        if (!user.isActive) {
+            return res.status(401).json({
+              success: false,
+              message: 'Account is deactivated'
+            });
+          }
+
+        const isValidPassword = await user.comparePassword(password);
+        
+        if (!isValidPassword) {
+            return res.status(401).json({
+                success: false,
+                message: 'Invalid email or password'
+              });
+        }
+        // generate tokens
+        const tokens = generateTokens(user);
+        
+        // Clean up old refresh tokens and add new one
+        user.cleanupRefreshTokens();
+        user.refreshTokens.push({
+            token: tokens.refreshToken,
+            createdAt: new Date()
+        });
+        user.lastLogin = new Date();
+        await user.save();
+
+        // Remove sensitive data from response
+        const userResponse = user.toObject();
+        delete userResponse.password;
+        delete userResponse.refreshTokens;
+
+        res.json({
+            success: true,
+            message: 'Login successful',
+            data: {
+                user: userResponse,
+                accessToken: tokens.accessToken,
+                refreshToken: tokens.refreshToken
+            }
+        });
+    } catch (error) {
+        console.error('Login error:', error);
+        res.status(500).json({
+            success: false,
+            message: 'Server error during login'
+        });
+    }
+})

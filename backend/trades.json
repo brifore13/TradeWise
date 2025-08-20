@@ -174,5 +174,53 @@
         "price": 486.18,
         "total": 972.36,
         "timestamp": "2025-03-09T15:47:15.691893"
+    },
+    {
+        "symbol": "META",
+        "quantity": 3,
+        "action": "BUY",
+        "price": 486.18,
+        "total": 1458.54,
+        "timestamp": "2025-03-09T17:02:35.057705"
+    },
+    {
+        "symbol": "META",
+        "quantity": 2,
+        "action": "BUY",
+        "price": 486.18,
+        "total": 972.36,
+        "timestamp": "2025-03-09T17:06:47.325934"
+    },
+    {
+        "symbol": "META",
+        "quantity": 2,
+        "action": "SELL",
+        "price": 486.18,
+        "total": 972.36,
+        "timestamp": "2025-03-09T17:07:30.172714"
+    },
+    {
+        "symbol": "AAPL",
+        "quantity": 10,
+        "action": "SELL",
+        "price": 175.28,
+        "total": 1752.8,
+        "timestamp": "2025-03-09T17:11:48.447264"
+    },
+    {
+        "symbol": "NKE",
+        "quantity": 20,
+        "action": "SELL",
+        "price": 84.92,
+        "total": 1698.4,
+        "timestamp": "2025-03-09T17:12:14.971002"
+    },
+    {
+        "symbol": "META",
+        "quantity": 1,
+        "action": "BUY",
+        "price": 486.18,
+        "total": 486.18,
+        "timestamp": "2025-03-09T17:19:49.638661"
     }
 ]

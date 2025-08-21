@@ -88,6 +88,10 @@ const tradeSchema = new mongoose.Schema({
 });
 
 // Indexes for better query performance
+tradeSchema.index({ user: 1, createdAt: -1 });
+tradeSchema.index({ symbol: 1, createdAt: -1 });
+tradeSchema.index({ user: 1, symbol: 1, createdAt: -1 });
+tradeSchema.index({ action: 1, createdAt: -1 });
 
 //  format Total
 tradeSchema.virtual('formattedTotal').get(function() {

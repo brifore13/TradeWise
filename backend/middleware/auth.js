@@ -61,7 +61,7 @@ const authenticateToken = async (req, res, next) => {
         }
 
         //  add user to request object
-        req.user = ;
+        req.user = user;
         req.userId = user._id;
 
         next();

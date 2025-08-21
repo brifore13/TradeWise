@@ -5,7 +5,7 @@ import { generateTokens, verifyRefreshToken, authenticateToken } from '../middle
 const router = express.Router()
 
 // Input validation helpers
-const valdateEmail = (email) => {
+const validateEmail = (email) => {
     const re = /^\w+([.-]?\w+)*@\w+([.-]?\w+)*(\.\w{2,3})+$/;
     return re.test(email);
 };

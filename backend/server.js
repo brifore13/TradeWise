@@ -1,6 +1,7 @@
 import express from 'express';
 import mongoose from 'mongoose';
 import dotenv from 'dotenv';
+import cors from 'cors';                
 import User from './models/User.js';
 import authRoutes from './routes/auth.js';
 import tradingRoutes from './routes/trading.js';
@@ -61,11 +62,11 @@ app.get('/', (req, res) => {
 
 // Health check with database status
 app.get('/health', async (req, res) => {
+
   res.json({
     status: 'OK',
     database: mongoose.connection.readyState === 1 ? 'Connected' : 'Disconnected'
   });
-});
 
 // Test endpoint to create a user
 app.post('/test-user', async (req, res) => {
@@ -97,7 +98,8 @@ app.post('/test-user', async (req, res) => {
   }
 });
 
-// 404 handler
+
+//  404 handler
 app.use('*', (req, res) => {
   res.status(404).json({
     success: false,
@@ -107,10 +109,6 @@ app.use('*', (req, res) => {
 
 // Start Server
 const server = app.listen(PORT, (err) => {
-  if (err) {
-    console.error('Server failed to start:', err);
-    process.exit(1);
-  }
   console.log(`TradeWise server running on port ${PORT}`);
   console.log(`Auth: http://localhost:${PORT}/api/auth`);
   console.log(`Trading: http://localhost:${PORT}/api/trading`);

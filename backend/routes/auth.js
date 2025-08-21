@@ -5,7 +5,7 @@ import { generateTokens, verifyRefreshToken, authenticateToken } from '../middle
 const router = express.Router()
 
 // Input validation helpers
-const valdateEmail = (email) => {
+const validateEmail = (email) => {
     const re = /^\w+([.-]?\w+)*@\w+([.-]?\w+)*(\.\w{2,3})+$/;
     return re.test(email);
 };
@@ -25,13 +25,13 @@ router.post('/register', async(req, res) => {
 
         // validation
         if (!(firstName && lastName && email && password && confirmPassword)) {
-            return res.status(400),json({
+            return res.status(400).json({
                 success: false,
                 message: 'All fields are required'
             });
         }
 
-        if (!valdateEmail(email)) {
+        if (!validateEmail(email)) {
             return res.status(400).json({
                 success: false,
                 message: 'Please provide a valid email address'
@@ -41,7 +41,7 @@ router.post('/register', async(req, res) => {
         if (!validatePassword(password)) {
             return res.status(400).json({
                 success: false,
-                message: 'Passwork must be at least 8 characters and contain uppercase, lowercase, number and special character'
+                message: 'Password must be at least 8 characters and contain uppercase, lowercase, number and special character'
             })
         }
 
@@ -187,6 +187,7 @@ router.post('/login', async (req, res) => {
             message: 'Server error during login'
         });
     }
+
 });
 
 // @route   POST /api/auth/logout

@@ -4,6 +4,7 @@ import dotenv from 'dotenv';
 import cors from 'cors';                
 import User from './models/User.js';
 import authRoutes from './routes/auth.js';
+import tradingRoutes from './routes/trading.js';
 
 // Load environment variables
 dotenv.config();
@@ -17,7 +18,7 @@ app.use(cors({
   credentials: true
 }));
 
-// Basic middleware
+// Body parsing middleware
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
@@ -28,9 +29,10 @@ const connectDB = async () => {
       useNewUrlParser: true,
       useUnifiedTopology: true,
     });
-    console.log('MongoDB Connection Successful');
+    
+    console.log('MongoDB Connected Successfully!');
   } catch (error) {
-    console.error('MongoDB Connection Error:', error.message); 
+    console.error('MongoDB Connection Error:', error.message);
     process.exit(1);
   }
 };
@@ -38,64 +40,33 @@ const connectDB = async () => {
 // Connect to database
 connectDB();
 
-// Routes
+//  ROUTES
 app.use('/api/auth', authRoutes);
+app.use('/api/trading', tradingRoutes);
 
 // Basic routes
 app.get('/', (req, res) => {
   res.json({
-    message: 'TradeWise Backend Server Running!',
-    timestamp: new Date().toISOString(),
-    environment: process.env.NODE_ENV || 'development',
-    port: PORT,
-    database: {
-      status: mongoose.connection.readyState === 1 ? 'Connected' : 'Disconnected',
-      name: mongoose.connection.name
-    },
+    message: 'TradeWise Backend Running!',
     endpoints: {
       auth: '/api/auth',
+      trading: '/api/trading',
       register: 'POST /api/auth/register',
       login: 'POST /api/auth/login',
-      refresh: 'POST /api/auth/refresh',
-      logout: 'POST /api/auth/logout',
-      me: 'GET /api/auth/me'
+      quote: 'GET /api/trading/quote?symbol=AAPL',
+      execute: 'POST /api/trading/execute',
+      history: 'GET /api/trading/history'
     }
   });
 });
 
 // Health check with database status
 app.get('/health', async (req, res) => {
-  try {
-    // Test database connection
-    const dbStatus = mongoose.connection.readyState;
-    const dbStatusText = {
-      0: 'Disconnected',
-      1: 'Connected',
-      2: 'Connecting',
-      3: 'Disconnecting'
-    };
 
-    res.json({
-      status: 'OK',
-      server: 'TradeWise Backend',
-      version: '1.0.0',
-      port: PORT,
-      database: {
-        status: dbStatusText[dbStatus],
-        ping: dbPing,
-        name: mongoose.connection.name,
-        host: mongoose.connection.host
-      },
-      timestamp: new Date().toISOString()
-    });
-  } catch (error) {
-    res.status(500).json({
-      status: 'ERROR',
-      message: 'Database health check failed',
-      error: error.message
-    });
-  }
-});
+  res.json({
+    status: 'OK',
+    database: mongoose.connection.readyState === 1 ? 'Connected' : 'Disconnected'
+  });
 
 // Test endpoint to create a user
 app.post('/test-user', async (req, res) => {
@@ -127,6 +98,7 @@ app.post('/test-user', async (req, res) => {
   }
 });
 
+
 //  404 handler
 app.use('*', (req, res) => {
   res.status(404).json({
@@ -135,41 +107,20 @@ app.use('*', (req, res) => {
   });
 });
 
-// Handle server errors
+// Start Server
 const server = app.listen(PORT, (err) => {
   console.log(`TradeWise server running on port ${PORT}`);
-  console.log(`Auth endpoints: http://localhost:${PORT}/api/auth`)
+  console.log(`Auth: http://localhost:${PORT}/api/auth`);
+  console.log(`Trading: http://localhost:${PORT}/api/trading`);
 });
 
+// Error handling
 server.on('error', (err) => {
   if (err.code === 'EADDRINUSE') {
     console.error(`Port ${PORT} is already in use!`);
     process.exit(1);
-  } else {
-    console.error('Server error:', err);
-    process.exit(1);
-  }
+  } 
 });
 
-// Graceful shutdown
-process.on('SIGTERM', () => {
-  console.log('SIGTERM received. Shutting down gracefully...');
-  mongoose.connection.close(() => {
-    console.log('MongoDB connection closed.');
-    server.close(() => {
-      process.exit(0);
-    });
-  });
-});
-
-process.on('SIGINT', () => {
-  console.log('SIGINT received. Shutting down gracefully...');
-  mongoose.connection.close(() => {
-    console.log('MongoDB connection closed.');
-    server.close(() => {
-      process.exit(0);
-    });
-  });
-});
 
 export default app;

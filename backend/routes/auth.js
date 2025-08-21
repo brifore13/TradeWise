@@ -187,6 +187,67 @@ router.post('/login', async (req, res) => {
             message: 'Server error during login'
         });
     }
+
+});
+
+// @route   POST /api/auth/logout
+// @desc    Logout user (invalidate refresh tokens)
+// @access  Private
+router.post('/logout', verifyRefreshToken, async (req, res) => {
+    try {
+        const user = req.user;
+        const refreshToken = req.refreshToken;
+
+        user.refreshTokens = user.refreshTokens.filter(tokenObj => tokenObj.token !== refreshToken);
+        await user.save()
+
+        res.json({
+            success: true,
+            message: 'Logged out successfully'
+        });
+
+    } catch (error) {
+        console.error('Logout error:', error);
+        res.status(500).json({
+            success: false,
+            message: 'Server error during logout'
+        })
+    }
 })
 
-export default router;
+// @router  GET /api/auth/me
+// @desc    Get current user
+// @access  Private
+router.get('/me', authenticateToken, async (req, res) => {
+    try {
+        const user = await User.findById(req.userId).select('-refreshTokens');
+
+        res.json({
+            success: true,
+            data: { user }
+        });
+    } catch (error) {
+        console.error('Get current user error:', error);
+        res.status(500).json({
+            success: false,
+            message: 'Server error fetching user data'
+        })
+    }
+})
+
+// @route   POST /api/auth/test-protected
+// @desc    Test protected route
+// @access  Private
+router.get('/test-protected', authenticateToken, async (req, res) => {
+    res.json({
+        success: true,
+        message: 'Protected route accessed successfully!',
+        user: {
+            id: req.user._id,
+            name: req.user.fullName,
+            email: req.user.email
+        }
+    });
+});
+
+export default router

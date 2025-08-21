@@ -5,6 +5,7 @@ import cors from 'cors';
 import User from './models/User.js';
 import authRoutes from './routes/auth.js';
 import tradingRoutes from './routes/trading.js';
+import cors from 'cors';
 
 // Load environment variables
 dotenv.config();

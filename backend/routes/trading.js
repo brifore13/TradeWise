@@ -1,6 +1,7 @@
 import express from 'express';
 import User from '../models/User.js';
 import Trade from '../models/Trade.js';
+import cors from 'cors';
 import { getStockPrice } from '../services/stockService.js';
 import { authenticateToken } from '../middleware/auth.js';
 
@@ -14,7 +15,7 @@ router.use(authenticateToken);
 // @access  Private
 router.get('/quote', async (req, res) => {
     try {
-        const { symbol } = req.query();
+        const { symbol } = req.query;
 
         if (!symbol) {
             return res.status(400).json({
@@ -183,3 +184,5 @@ router.get('/history', async (req, res) => {
         });
     }   
 });
+
+export default router;

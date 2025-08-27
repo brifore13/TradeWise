@@ -25,7 +25,6 @@ router.post('/register', async(req, res) => {
 
         // validation
         if (!(firstName && lastName && email && password && confirmPassword)) {
-            console.log('Validation failed: Missing fields');
             return res.status(400).json({
                 success: false,
                 message: 'All fields are required'
@@ -33,7 +32,6 @@ router.post('/register', async(req, res) => {
         }
 
         if (!validateEmail(email)) {
-            console.log('Validation failed: email validation')
             return res.status(400).json({
                 success: false,
                 message: 'Please provide a valid email address'
@@ -41,7 +39,6 @@ router.post('/register', async(req, res) => {
         } 
 
         if (!validatePassword(password)) {
-            console.log('Validation failed: password')
             return res.status(400).json({
                 success: false,
                 message: 'Password must be at least 8 characters and contain uppercase, lowercase, number and special character'
@@ -49,7 +46,6 @@ router.post('/register', async(req, res) => {
         }
 
         if (password !== confirmPassword) {
-            console.log('PWs do not match')
             return res.status(400).json({
                 success: false,
                 message: 'Passwords do not match'
@@ -59,7 +55,6 @@ router.post('/register', async(req, res) => {
         // check if user already exists
         const existingUser = await User.findOne({ email: email.toLowerCase() });
         if (existingUser) {
-            console.log('user exists')
             return res.status(409).json({
                 success: false,
                 message: 'User with this email already exists'
@@ -192,6 +187,7 @@ router.post('/login', async (req, res) => {
             message: 'Server error during login'
         });
     }
+
 });
 
 // @route   POST /api/auth/logout

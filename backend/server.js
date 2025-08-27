@@ -6,6 +6,7 @@ import User from './models/User.js';
 import authRoutes from './routes/auth.js';
 import tradingRoutes from './routes/trading.js';
 import favoritesRoutes from './routes/favorites.js'
+import portfolioRoutes from './routes/portfolio.js';
 
 const app = express();
 const PORT = process.env.PORT || 3001;
@@ -42,6 +43,7 @@ connectDB();
 app.use('/api/auth', authRoutes);
 app.use('/api/trading', tradingRoutes);
 app.use('/api/favorites', favoritesRoutes);
+app.use('/api/portfolio', portfolioRoutes);
 
 // Basic routes
 app.get('/', (req, res) => {

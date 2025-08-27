@@ -1,3 +1,4 @@
+import './config.js';
 import express from 'express';
 import mongoose from 'mongoose';
 import dotenv from 'dotenv';
@@ -7,7 +8,7 @@ import authRoutes from './routes/auth.js';
 import tradingRoutes from './routes/trading.js';
 
 // Load environment variables
-dotenv.config();
+// dotenv.config();
 
 const app = express();
 const PORT = process.env.PORT || 3001;

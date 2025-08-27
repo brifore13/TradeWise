@@ -1,9 +1,14 @@
 import axios from 'axios';
+import { config } from '../config.js';
+
 // Alpha Vantage API config
-const API_KEY = process.env.ALPHA_VANTAGE_API_KEY;
+const API_KEY = config.alphaVantageApiKey;
 const BASE_URL = 'https://www.alphavantage.co/query';
 
-// Mock data for development
+// Debug: Check API key loading
+console.log('StockService - API_KEY loaded:', API_KEY ? 'YES' : 'NO', API_KEY ? `(${API_KEY.substring(0, 4)}...)` : '(undefined)');
+
+// Mock data for development/fallback
 const MOCK_DATA = {
     "AAPL": {
       "Global Quote": {
@@ -128,7 +133,13 @@ const formatStockData = (quote, symbol) => {
 
 // Get stock price from Alpha Vantage API
 const fetchFromAPI = async (symbol) => {
+    if (!API_KEY) {
+        throw new Error('Alpha Vantage API key not configured');
+    }
+
     try {
+        console.log(`Fetching ${symbol} from Alpha Vantage API...`);
+        
         const response = await axios.get(BASE_URL, {
             params: {
                 function: 'GLOBAL_QUOTE',
@@ -138,12 +149,18 @@ const fetchFromAPI = async (symbol) => {
             timeout: 10000
         });
         
+        console.log(`API Response for ${symbol}:`, response.data);
+
         if (response.data['Error Message']) {
             throw new Error('Invalid symbol or API error');
         }
 
         if (response.data['Note']) {
             throw new Error('API rate limit exceeded');
+        }
+
+        if (!response.data['Global Quote']) {
+            throw new Error('No data returned from API');
         }
 
         return response.data;
@@ -161,19 +178,23 @@ const fetchFromAPI = async (symbol) => {
 // Get single stock price
 const getStockPrice = async (symbol) => {
     try {
-        symbol = symbol.toUpperCase()
+        symbol = symbol.toUpperCase();
+        console.log(`Getting stock price for: ${symbol}`);
 
         let stockData;
 
-        if (API_KEY && process.env.NODE_ENV === 'production') {
+        // Try API first if key is available
+        if (API_KEY) {
             try {
                 const apiData = await fetchFromAPI(symbol);
                 stockData = formatStockData(apiData, symbol);
+                console.log(`Successfully fetched ${symbol} from API`);
             } catch (apiError) {
-                console.warn(`API fetch failed for ${symbol}, using mock data:`, apiError.message);
+                console.warn(`API fetch failed for ${symbol}, falling back to mock data:`, apiError.message);
                 stockData = formatStockData(MOCK_DATA[symbol], symbol);
             }
         } else {
+            console.warn('No API key found, using mock data');
             stockData = formatStockData(MOCK_DATA[symbol], symbol);
         }
 
@@ -188,7 +209,7 @@ const getStockPrice = async (symbol) => {
     }
 };
 
-//  Get multiple stock prices
+// Get multiple stock prices
 const getMultipleStockPrices = async (symbols) => {
     try {
         const results = {};
@@ -202,7 +223,7 @@ const getMultipleStockPrices = async (symbols) => {
                 results[symbol.toUpperCase()] = null;
             }
         });
-        await Promise.all(fetchPromises)
+        await Promise.all(fetchPromises);
 
         return results;
     } catch (error) {
@@ -215,22 +236,29 @@ const getMultipleStockPrices = async (symbols) => {
 const searchStocks = async (query) => {
     try {
         query = query.toUpperCase();
+        console.log(`Searching for: ${query}`);
 
-        const mockSymbols = Object.keys(MOCK_DATA);
-
-        if (mockSymbols.includes(query)) {
+        // For now, try exact match first
+        try {
             const stockData = await getStockPrice(query);
             return [stockData];
-        }
-        //  partial matches
-        const partialMatches = mockSymbols.filter(symbol =>
-            symbol.includes(query)
+        } catch (error) {
+            // If exact match fails, check mock data for partial matches
+            const mockSymbols = Object.keys(MOCK_DATA);
+            const partialMatches = mockSymbols.filter(symbol =>
+                symbol.includes(query)
             ).slice(0, 10);
 
-        const results = await Promise.all(
-            partialMatches.map(symbol => getStockPrice(symbol))
-        );
-        return results.filter(Boolean);
+            if (partialMatches.length > 0) {
+                const results = await Promise.all(
+                    partialMatches.map(symbol => getStockPrice(symbol))
+                );
+                return results.filter(Boolean);
+            }
+
+            // No matches found
+            throw new Error('No stocks found matching your search');
+        }
     } catch (error) {
         console.error('Error searching stocks:', error);
         throw error;

@@ -2,16 +2,49 @@ import express from 'express';
 import User from '../models/User.js';
 import Trade from '../models/Trade.js';
 import cors from 'cors';
-import { getStockPrice } from '../services/stockService.js';
+import { getStockPrice, searchStocks } from '../services/stockService.js';
 import { authenticateToken } from '../middleware/auth.js';
 
-const router = express.Router()
+const router = express.Router();
 
-// apply authentication to trading routes
+// Apply authentication to trading routes
 router.use(authenticateToken);
 
+// @route   GET /api/trading/search
+// @desc    Search for stocks
+// @access  Private
+router.get('/search', async (req, res) => {
+    try {
+        const { q } = req.query;
+
+        if (!q || q.trim().length === 0) {
+            return res.status(400).json({
+                success: false,
+                message: 'Search query is required'
+            });
+        }
+
+        const searchResults = await searchStocks(q.trim());
+
+        res.json({
+            success: true,
+            data: {
+                query: q,
+                results: searchResults,
+                count: searchResults.length
+            }
+        });
+    } catch (error) {
+        console.error('Search error:', error);
+        res.status(500).json({
+            success: false,
+            message: error.message || 'Error searching stocks'
+        });
+    }
+});
+
 // @route   GET /api/trading/quote
-// @desc    get stock quote for trading
+// @desc    Get stock quote for trading
 // @access  Private
 router.get('/quote', async (req, res) => {
     try {
@@ -35,7 +68,7 @@ router.get('/quote', async (req, res) => {
         res.status(500).json({
             success: false,
             message: 'Error fetching stock quote'
-        })
+        });
     }
 });
 
@@ -159,7 +192,6 @@ router.post('/execute', async (req, res) => {
     }
   });
 
-
 // @route   GET /api/trading/history
 // @desc    Get user's trade history
 // @access  Private
@@ -175,7 +207,7 @@ router.get('/history', async (req, res) => {
         res.json({
             success: true,
             data: { trades }
-        })
+        });
     } catch (error) {
         console.error('Trade history error:', error);
         res.status(500).json({

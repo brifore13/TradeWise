@@ -96,67 +96,40 @@ export const getTradeHistory = async () => {
   }
 };
 
-// Favorites APIs (you'll need to implement these in your backend)
+// Favorites APIs - Now using backend
 export const getFavorites = async () => {
   try {
-    // For now, return from localStorage until you implement backend favorites
-    const favorites = JSON.parse(localStorage.getItem('favorites') || '[]');
-    
-    // Get fresh data for each favorite
-    const updatedFavorites = await Promise.all(
-      favorites.map(async (favorite) => {
-        try {
-          const freshData = await getStockQuote(favorite.symbol);
-          return {
-            ...favorite,
-            price: freshData.price,
-            change: freshData.change,
-            changeAmount: freshData.changeAmount
-          };
-        } catch (error) {
-          console.warn(`Failed to update ${favorite.symbol}:`, error);
-          return favorite; // Return stale data if update fails
-        }
-      })
-    );
-    
-    return updatedFavorites;
+    const response = await api.get('/favorites');
+    return response.data.data;
   } catch (error) {
-    throw new Error('Failed to get favorites');
+    throw new Error(error.response?.data?.message || 'Failed to get favorites');
   }
 };
 
 export const addFavorites = async (stockData) => {
   try {
-    // For now, store in localStorage until you implement backend favorites
-    const favorites = JSON.parse(localStorage.getItem('favorites') || '[]');
+    const response = await api.post('/favorites', {
+      symbol: stockData.symbol,
+      name: stockData.name || stockData.symbol
+    });
     
-    // Check if already exists
-    const exists = favorites.some(fav => fav.symbol === stockData.symbol);
-    if (exists) {
-      throw new Error('Stock already in favorites');
-    }
-    
-    // Add new favorite
-    const newFavorites = [...favorites, stockData];
-    localStorage.setItem('favorites', JSON.stringify(newFavorites));
-    
-    return newFavorites;
+    // Return fresh favorites list
+    const favorites = await getFavorites();
+    return favorites;
   } catch (error) {
-    throw new Error(error.message || 'Failed to add to favorites');
+    throw new Error(error.response?.data?.message || 'Failed to add to favorites');
   }
 };
 
 export const removeFavorite = async (symbol) => {
   try {
-    // For now, remove from localStorage until you implement backend favorites
-    const favorites = JSON.parse(localStorage.getItem('favorites') || '[]');
-    const newFavorites = favorites.filter(fav => fav.symbol !== symbol);
-    localStorage.setItem('favorites', JSON.stringify(newFavorites));
+    await api.delete(`/favorites/${symbol}`);
     
-    return newFavorites;
+    // Return fresh favorites list
+    const favorites = await getFavorites();
+    return favorites;
   } catch (error) {
-    throw new Error('Failed to remove from favorites');
+    throw new Error(error.response?.data?.message || 'Failed to remove from favorites');
   }
 };
 

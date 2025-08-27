@@ -9,6 +9,7 @@ const TradeView = () => {
     const [totalPrice, setTotalPrice] = useState(null);
     const [tradeResult, setTradeResult] = useState(null);
     const [error, setError] = useState(null);
+    const [loading, setLoading] = useState(false);
     const [order, setOrder] = useState({
         symbol: '',
         quantity: '',
@@ -18,39 +19,70 @@ const TradeView = () => {
     const handleLocateStock = async () => {
         try {
             setError(null);
+            setLoading(true);
+            console.log('Locating stock:', order.symbol); // Debug log
+            
             const data = await getStockQuote(order.symbol);
+            console.log('Stock data received:', data); // Debug log
+            
             setStockData(data);
         } catch (error) {
-            setError('Stock not found');
+            console.error('Stock lookup error:', error); // Debug log
+            setError('Stock not found: ' + error.message);
             setStockData(null);
+        } finally {
+            setLoading(false);
         }
     };
 
     const handleCalculateTotal = () => {
         if (!stockData || !order.quantity) {
-            setError('Please enter quantity and stock');
+            setError('Please enter quantity and locate stock first');
             return;
         }
-        const total = parseFloat(stockData.price) * parseInt(order.quantity);
+        
+        const quantity = parseInt(order.quantity);
+        const price = parseFloat(stockData.price);
+        
+        if (quantity <= 0) {
+            setError('Quantity must be greater than 0');
+            return;
+        }
+        
+        const total = price * quantity;
         setTotalPrice(total);
+        setError(null);
+        
+        console.log('Total calculated:', { quantity, price, total }); // Debug log
     };
 
     const handleExecuteTrade = async () => {
         if (!stockData || !order.quantity || totalPrice === null) {
-            setError('Calculate total price first');
+            setError('Please calculate total price first');
             return;
         }
+        
         try {
             setError(null);
+            setLoading(true);
+            
+            console.log('Executing trade:', { // Debug log
+                symbol: order.symbol,
+                quantity: parseInt(order.quantity),
+                action: order.action
+            });
+
+            // Send only the data the backend expects
             const result = await executeTrade({
                 symbol: order.symbol,
                 quantity: parseInt(order.quantity),
-                action: order.action,
-                price: parseFloat(stockData.price),
-                totalPrice: totalPrice
+                action: order.action
             });
 
-            setTradeResult(result.trade);
+            console.log('Trade result:', result); // Debug log
+
+            // Access the correct nested data structure
+            setTradeResult(result.data.trade);
 
             // Reset form
             setOrder({
@@ -62,7 +94,10 @@ const TradeView = () => {
             setTotalPrice(null);
 
         } catch (error) {
+            console.error('Trade execution error:', error); // Debug log
             setError('Failed to execute trade: ' + error.message);
+        } finally {
+            setLoading(false);
         }
     };
 
@@ -135,9 +170,9 @@ const TradeView = () => {
                                     type="button"
                                     className="btn btn-secondary"
                                     onClick={handleLocateStock}
-                                    disabled={!order.symbol.trim()}
+                                    disabled={!order.symbol.trim() || loading}
                                 >
-                                    Locate Stock
+                                    {loading ? 'Locating...' : 'Locate Stock'}
                                 </button>
                             </div>
                         </div>
@@ -153,7 +188,7 @@ const TradeView = () => {
                                         </p>
                                     </div>
                                     <div className="text-right">
-                                        <div className={`text-sm font-medium ${parseFloat(stockData.change) >= 0 ? 'text-success' : 'text-danger'}`}>
+                                        <div className={`text-sm font-medium ${parseFloat(stockData.changeAmount) >= 0 ? 'text-success' : 'text-danger'}`}>
                                             Change: {stockData.change}
                                         </div>
                                     </div>
@@ -221,9 +256,9 @@ const TradeView = () => {
                             type="button" 
                             className="btn btn-primary btn-full btn-lg"
                             onClick={handleExecuteTrade}
-                            disabled={totalPrice === null}
+                            disabled={totalPrice === null || loading}
                         >
-                            Place {order.action} Order
+                            {loading ? 'Placing Order...' : `Place ${order.action} Order`}
                         </button>
                         
                         {/* Trade Result */}

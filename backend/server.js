@@ -5,7 +5,6 @@ import cors from 'cors';
 import User from './models/User.js';
 import authRoutes from './routes/auth.js';
 import tradingRoutes from './routes/trading.js';
-import cors from 'cors';
 
 // Load environment variables
 dotenv.config();
@@ -68,6 +67,7 @@ app.get('/health', async (req, res) => {
     status: 'OK',
     database: mongoose.connection.readyState === 1 ? 'Connected' : 'Disconnected'
   });
+});
 
 // Test endpoint to create a user
 app.post('/test-user', async (req, res) => {

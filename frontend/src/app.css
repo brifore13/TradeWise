@@ -759,3 +759,257 @@ body {
   font-style: italic;
   text-align: center;
 }
+
+/* Updated Button Styles */
+
+/* Primary Login/Register Button */
+.login-button {
+  width: 100%;
+  padding: 14px 20px;
+  margin: 15px 0;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 16px;
+  font-weight: 500;
+  background-color: #83ab85;
+  color: white;
+  transition: background-color 0.2s ease;
+}
+
+.login-button:hover {
+  background-color: #6f956f;
+}
+
+.login-button:disabled {
+  background-color: #ccc;
+  cursor: not-allowed;
+}
+
+/* Navigation Buttons */
+.nav-button {
+  padding: 10px 16px;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 14px;
+  font-weight: 500;
+  background-color: transparent;
+  color: #333;
+  transition: background-color 0.2s ease;
+  margin: 0 4px;
+}
+
+.nav-button:hover {
+  background-color: #f0f0f0;
+}
+
+/* Logout Button */
+.logout {
+  padding: 10px 16px;
+  margin: 0 4px;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 14px;
+  font-weight: 500;
+  background-color: #83ab85;
+  color: white;
+  transition: background-color 0.2s ease;
+}
+
+.logout:hover {
+  background-color: #6f956f;
+}
+
+/* Action Buttons (Buy/Sell/Execute) */
+.buy-button, .sell-button {
+  padding: 12px 24px;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 16px;
+  font-weight: 500;
+  border: none;
+  transition: all 0.2s ease;
+  min-width: 100px;
+}
+
+.buy-button {
+  background-color: #2d5a2d;
+  color: white;
+}
+
+.buy-button:hover {
+  background-color: #1f3f1f;
+}
+
+.sell-button {
+  background-color: #dc3545;
+  color: white;
+}
+
+.sell-button:hover {
+  background-color: #c82333;
+}
+
+/* Place Order Button */
+.place-order-button {
+  width: 100%;
+  padding: 14px 20px;
+  background-color: #2d5a2d;
+  color: white;
+  border: none;
+  border-radius: 6px;
+  font-size: 16px;
+  font-weight: 500;
+  cursor: pointer;
+  margin-top: 20px;
+  transition: background-color 0.2s ease;
+}
+
+.place-order-button:hover {
+  background-color: #1f3f1f;
+}
+
+.place-order-button:disabled {
+  background-color: #ccc;
+  cursor: not-allowed;
+}
+
+/* Secondary Action Buttons */
+.action-button, .enter-button {
+  padding: 10px 16px;
+  background-color: #83ab85;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 14px;
+  font-weight: 500;
+  transition: background-color 0.2s ease;
+}
+
+.action-button:hover, .enter-button:hover {
+  background-color: #6f956f;
+}
+
+.action-button:disabled {
+  background-color: #ccc;
+  cursor: not-allowed;
+}
+
+/* Small Utility Buttons */
+.help-button, .reset-button, .refresh-button, .delete-button {
+  padding: 8px 12px;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 13px;
+  font-weight: 500;
+  border: 1px solid transparent;
+  transition: all 0.2s ease;
+}
+
+.help-button {
+  background-color: #83ab85;
+  color: white;
+  border-color: #83ab85;
+}
+
+.help-button:hover {
+  background-color: #6f956f;
+}
+
+.reset-button {
+  background-color: #dc3545;
+  color: white;
+  border-color: #dc3545;
+}
+
+.reset-button:hover {
+  background-color: #c82333;
+}
+
+.refresh-button {
+  background-color: #17a2b8;
+  color: white;
+  border-color: #17a2b8;
+}
+
+.refresh-button:hover {
+  background-color: #138496;
+}
+
+.delete-button {
+  background-color: #dc3545;
+  color: white;
+  border-color: #dc3545;
+}
+
+.delete-button:hover {
+  background-color: #c82333;
+}
+
+/* About Button */
+.about-button {
+  margin-top: 20px;
+  background-color: #83ab85;
+  color: white;
+  border: none;
+  padding: 10px 20px;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 14px;
+  font-weight: 500;
+  transition: background-color 0.2s ease;
+}
+
+.about-button:hover {
+  background-color: #6f956f;
+}
+
+/* Trade Action Buttons Container */
+.trade-buttons, .action-buttons {
+  display: flex;
+  gap: 12px;
+  justify-content: center;
+  margin: 20px 0;
+}
+
+.trade-buttons .buy-button,
+.trade-buttons .sell-button {
+  flex: 1;
+  max-width: 150px;
+}
+
+/* Button Groups */
+.button-group {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+
+.button-group button {
+  margin: 0;
+}
+
+/* Responsive Button Adjustments */
+@media (max-width: 768px) {
+  .nav-button {
+    padding: 8px 12px;
+    font-size: 13px;
+  }
+  
+  .trade-buttons {
+    flex-direction: column;
+  }
+  
+  .trade-buttons .buy-button,
+  .trade-buttons .sell-button {
+    max-width: none;
+  }
+  
+  .login-button, .place-order-button {
+    padding: 16px 20px;
+    font-size: 16px;
+  }
+}

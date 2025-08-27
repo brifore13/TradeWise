@@ -1,284 +1,213 @@
+import axios from 'axios';
+
 const API_BASE_URL = process.env.REACT_APP_API_URL || 'http://localhost:3001/api';
 
-// Token management
-const getToken = () => localStorage.getItem('accessToken');
-const getRefreshToken = () => localStorage.getItem('refreshToken');
-const setTokens = (accessToken, refreshToken) => {
-  localStorage.setItem('accessToken', accessToken);
-  localStorage.setItem('refreshToken', refreshToken);
-};
-const clearTokens = () => {
-  localStorage.removeItem('accessToken');
-  localStorage.removeItem('refreshToken');
-};
+// Create axios instance with default config
+const api = axios.create({
+  baseURL: API_BASE_URL,
+  timeout: 10000,
+});
 
-// API request helper with automatic token refresh
-const apiRequest = async (url, options = {}) => {
-  const token = getToken();
-  
-  const defaultOptions = {
-    headers: {
-      'Content-Type': 'application/json',
-      ...(token && { 'Authorization': `Bearer ${token}` }),
-      ...options.headers
-    },
-    ...options
-  };
+// Add auth token to requests
+api.interceptors.request.use((config) => {
+  const token = localStorage.getItem('token');
+  if (token) {
+    config.headers.Authorization = `Bearer ${token}`;
+  }
+  return config;
+});
 
+// Handle auth errors
+api.interceptors.response.use(
+  (response) => response,
+  (error) => {
+    if (error.response?.status === 401) {
+      localStorage.removeItem('token');
+      window.location.href = '/login';
+    }
+    return Promise.reject(error);
+  }
+);
+
+// Authentication APIs
+export const login = async (email, password) => {
   try {
-    let response = await fetch(`${API_BASE_URL}${url}`, defaultOptions);
-    
-    console.log('API RESPONSE:', {
-        url: `${API_BASE_URL}${url}`,
-        status: response.status,
-        ok: response.ok
-    });
-    const responseText = await response.text();
-    console.log('Raw response text:', responseText);
-    // If token expired, try to refresh
-    // Then try to parse it
-    let data;
-    try {
-        data = JSON.parse(responseText);
-        console.log('Parsed response data:', data);
-    } catch (parseError) {
-        console.error('Failed to parse JSON:', parseError);
-        console.log('Response was not valid JSON');
-        throw new Error('Invalid server response');
-    }
-    
-    if (!response.ok) {
-      throw new Error(data.message || `HTTP error! status: ${response.status}`);
-    }
-    
-    return data;
+    const response = await api.post('/auth/login', { email, password });
+    return response.data;
   } catch (error) {
-    console.error('API request failed:', error);
-    throw error;
+    throw new Error(error.response?.data?.message || 'Login failed');
   }
 };
 
-//// AUTHENTICATION SERVICES
-export const loginUser = async (credentials) => {
+export const register = async (userData) => {
   try {
-    console.log('Attempting login with:', credentials.email);
-    const response = await apiRequest('/auth/login', {
-      method: 'POST',
-      body: JSON.stringify(credentials)
+    const response = await api.post('/auth/register', userData);
+    return response.data;
+  } catch (error) {
+    throw new Error(error.response?.data?.message || 'Registration failed');
+  }
+};
+
+// Stock APIs - Now calling your backend
+export const searchStock = async (query) => {
+  try {
+    const response = await api.get('/trading/search', {
+      params: { q: query }
     });
     
-    if (response.success) {
-      setTokens(response.data.accessToken, response.data.refreshToken);
-      console.log('Login successful');
-      return { token: response.data.accessToken, user: response.data.user };
+    // Return the first result for compatibility with existing frontend code
+    if (response.data.success && response.data.data.results.length > 0) {
+      return response.data.data.results[0];
+    } else {
+      throw new Error('No stocks found');
     }
-    
-    throw new Error(response.message || 'Login failed');
   } catch (error) {
-    console.error('Login error:', error);
-    throw error;
+    throw new Error(error.response?.data?.message || 'Stock search failed');
   }
 };
 
-export const registerUser = async (userData) => {
-  try {
-    console.log('Sending registration request:', userData);
-    const response = await apiRequest('/auth/register', {
-      method: 'POST',
-      body: JSON.stringify(userData)
-    });
-    
-    if (response.success) {
-      setTokens(response.data.accessToken, response.data.refreshToken);
-      return { token: response.data.accessToken, user: response.data.user };
-    }
-    
-    throw new Error(response.message || 'Registration failed');
-  } catch (error) {
-    console.error('Registration error:', error);
-    if (error.message && error.message !== 'Registration failed') {
-        throw error;
-    }
-    throw new Error('Registration failed');
-  }
-};
-
-export const logoutUser = async () => {
-  try {
-    const refreshToken = getRefreshToken();
-    if (refreshToken) {
-      await apiRequest('/auth/logout', {
-        method: 'POST',
-        body: JSON.stringify({ refreshToken })
-      });
-    }
-  } catch (error) {
-    console.error('Logout error:', error);
-  } finally {
-    clearTokens();
-  }
-};
-
-//// TRADING SERVICES
 export const getStockQuote = async (symbol) => {
   try {
-    console.log(`Getting quote for ${symbol}`);
-    const response = await apiRequest(`/trading/quote?symbol=${encodeURIComponent(symbol)}`);
-    return response.data;
+    const response = await api.get('/trading/quote', {
+      params: { symbol }
+    });
+    return response.data.data;
   } catch (error) {
-    console.error('Error fetching stock quote:', error);
-    throw error;
+    throw new Error(error.response?.data?.message || 'Failed to get stock quote');
   }
 };
 
+// Trading APIs
 export const executeTrade = async (tradeData) => {
   try {
-    console.log(`Executing ${tradeData.action} order for ${tradeData.quantity} shares of ${tradeData.symbol}`);
-    const response = await apiRequest('/trading/execute', {
-      method: 'POST',
-      body: JSON.stringify({
-        symbol: tradeData.symbol,
-        quantity: tradeData.quantity,
-        action: tradeData.action
-      })
-    });
+    const response = await api.post('/trading/execute', tradeData);
     return response.data;
   } catch (error) {
-    console.error('Error executing trade:', error);
-    throw error;
+    throw new Error(error.response?.data?.message || 'Trade execution failed');
   }
 };
 
 export const getTradeHistory = async () => {
   try {
-    const response = await apiRequest('/trading/history');
-    return response.data.trades;
+    const response = await api.get('/trading/history');
+    return response.data.data.trades;
   } catch (error) {
-    console.error('Error fetching trade history:', error);
-    throw error;
+    throw new Error(error.response?.data?.message || 'Failed to get trade history');
   }
 };
 
-//// DASHBOARD SERVICES (Simplified)
-export const fetchDashboard = async () => {
-  try {
-    // Get current user info
-    const userResponse = await apiRequest('/auth/me');
-    const user = userResponse.data.user;
-    
-    // Get recent trades
-    const trades = await getTradeHistory();
-    const recentTrade = trades.length > 0 ? trades[0] : null;
-    
-    // Get favorites (simplified - return empty array for now)
-    const favorites = user.favorites || [];
-    
-    return {
-      portfolio: {
-        totalValue: user.portfolio.totalValue || 0,
-        totalAssetValue: user.portfolio.totalAssetValue || 0,
-        cash: user.portfolio.cash || 0,
-        todaysChange: user.portfolio.dailyChange || 0,
-        holdings: user.portfolio.holdings || []
-      },
-      favorites,
-      recentTrade
-    };
-  } catch (error) {
-    console.error('Error fetching dashboard data:', error);
-    throw error;
-  }
-};
-
-//// PORTFOLIO SERVICES
-export const getPortfolioSummary = async () => {
-  try {
-    const response = await apiRequest('/auth/me');
-    const user = response.data.user;
-    
-    const holdings = user.portfolio.holdings.map(holding => {
-      const currentValue = holding.shares * holding.currentPrice;
-      const profitLoss = currentValue - holding.totalCost;
-      
-      return {
-        symbol: holding.symbol,
-        shares: holding.shares,
-        avgPrice: holding.avgPrice,
-        currentPrice: holding.currentPrice,
-        totalCost: holding.totalCost,
-        currentValue,
-        profitLoss
-      };
-    });
-
-    return {
-      cash: user.portfolio.cash,
-      totalAssetValue: user.portfolio.totalAssetValue,
-      totalValue: user.portfolio.totalValue,
-      holdings
-    };
-  } catch (error) {
-    console.error('Error getting portfolio summary:', error);
-    throw error;
-  }
-};
-
-//// MARKET SERVICES (Simplified)
-export const searchStock = async (symbol) => {
-  try {
-    console.log('Searching for stock:', symbol);
-    const response = await apiRequest(`/trading/quote?symbol=${encodeURIComponent(symbol)}`);
-    return response.data;
-  } catch (error) {
-    console.error('Search error:', error);
-    throw error;
-  }
-};
-
+// Favorites APIs (you'll need to implement these in your backend)
 export const getFavorites = async () => {
   try {
-    const response = await apiRequest('/auth/me');
-    return response.data.user.favorites || [];
+    // For now, return from localStorage until you implement backend favorites
+    const favorites = JSON.parse(localStorage.getItem('favorites') || '[]');
+    
+    // Get fresh data for each favorite
+    const updatedFavorites = await Promise.all(
+      favorites.map(async (favorite) => {
+        try {
+          const freshData = await getStockQuote(favorite.symbol);
+          return {
+            ...favorite,
+            price: freshData.price,
+            change: freshData.change,
+            changeAmount: freshData.changeAmount
+          };
+        } catch (error) {
+          console.warn(`Failed to update ${favorite.symbol}:`, error);
+          return favorite; // Return stale data if update fails
+        }
+      })
+    );
+    
+    return updatedFavorites;
   } catch (error) {
-    console.error('Error getting favorites:', error);
-    throw error;
+    throw new Error('Failed to get favorites');
   }
 };
 
-export const addFavorites = async (stock) => {
+export const addFavorites = async (stockData) => {
   try {
-    console.log(`Adding ${stock.symbol} to favorites`);
-    // For now, return the stock - implement favorites API later
-    return [stock];
+    // For now, store in localStorage until you implement backend favorites
+    const favorites = JSON.parse(localStorage.getItem('favorites') || '[]');
+    
+    // Check if already exists
+    const exists = favorites.some(fav => fav.symbol === stockData.symbol);
+    if (exists) {
+      throw new Error('Stock already in favorites');
+    }
+    
+    // Add new favorite
+    const newFavorites = [...favorites, stockData];
+    localStorage.setItem('favorites', JSON.stringify(newFavorites));
+    
+    return newFavorites;
   } catch (error) {
-    console.error('Error adding to favorites:', error);
-    throw error;
+    throw new Error(error.message || 'Failed to add to favorites');
   }
 };
 
 export const removeFavorite = async (symbol) => {
   try {
-    console.log(`Removing ${symbol} from favorites`);
-    // For now, return empty array - implement favorites API later
-    return [];
+    // For now, remove from localStorage until you implement backend favorites
+    const favorites = JSON.parse(localStorage.getItem('favorites') || '[]');
+    const newFavorites = favorites.filter(fav => fav.symbol !== symbol);
+    localStorage.setItem('favorites', JSON.stringify(newFavorites));
+    
+    return newFavorites;
   } catch (error) {
-    console.error('Error removing favorite:', error);
-    throw error;
+    throw new Error('Failed to remove from favorites');
   }
 };
 
-// Utility function to check if user is authenticated
-export const isAuthenticated = () => {
-  return !!getToken();
-};
-
-// Get current user from API
-export const getCurrentUser = async () => {
+// Portfolio APIs (you'll need to implement these in your backend)
+export const getPortfolio = async () => {
   try {
-    const response = await apiRequest('/auth/me');
-    return response.data.user;
+    // This should call your backend portfolio endpoint when implemented
+    const response = await api.get('/portfolio'); // You'll need to create this endpoint
+    return response.data;
   } catch (error) {
-    console.error('Error getting current user:', error);
-    return null;
+    throw new Error(error.response?.data?.message || 'Failed to get portfolio');
   }
 };
+
+// Legacy aliases for backward compatibility
+export const loginUser = login;
+export const registerUser = register;
+
+// Dashboard and portfolio functions (temporary implementations)
+export const fetchDashboard = async () => {
+  try {
+    // Get portfolio data and recent trades for dashboard
+    const [portfolio, trades] = await Promise.all([
+      getPortfolio().catch(() => ({ cash: 10000, totalValue: 10000, holdings: [] })),
+      getTradeHistory().catch(() => [])
+    ]);
+    
+    return {
+      portfolio,
+      recentTrades: trades.slice(0, 5), // Last 5 trades
+      marketSummary: [] // You can add market summary later
+    };
+  } catch (error) {
+    throw new Error('Failed to fetch dashboard data');
+  }
+};
+
+export const getPortfolioSummary = async () => {
+  try {
+    // This should eventually call your backend portfolio endpoint
+    // For now, return mock data or basic portfolio info
+    return {
+      totalValue: 10000,
+      cash: 5000,
+      holdings: [],
+      dayChange: 0,
+      dayChangePercent: 0
+    };
+  } catch (error) {
+    throw new Error('Failed to get portfolio summary');
+  }
+};
+
+export default api;

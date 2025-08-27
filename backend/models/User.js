@@ -61,6 +61,25 @@ const portfolioSchema = new mongoose.Schema({
     }
 });
 
+const favoriteSchema = new mongoose.Schema({
+    symbol: {
+        type: String,
+        required: true,
+        uppercase: true
+    },
+    name: {
+        type: String,
+        default: function() { return this.symbol; }
+    },
+    lastPrice: String,
+    lastChange: String,
+    lastChangeAmount: String,
+    addedAt: {
+        type: Date, 
+        default: Date.now
+    }
+});
+
 const userSchema = new mongoose.Schema({
     firstName: {
         type: String,
@@ -92,17 +111,7 @@ const userSchema = new mongoose.Schema({
         type: portfolioSchema,
         default: () => ({})
     },
-    favorites: [{
-        symbol: {
-            type: String,
-            uppercase: true
-        },
-        name: String,
-        addedAt: {
-            type: Date, 
-            default: Date.now
-        }
-    }],
+    favorites: [favoriteSchema],
     isActive: {
         type: Boolean,
         default: true
@@ -145,6 +154,7 @@ userSchema.virtual('portfolio.totalProfitLoss').get(function() {
 // Index for better query performance
 userSchema.index({ email: 1 });
 userSchema.index({ 'portfolio.holdings.symbol': 1 });
+userSchema.index({ 'favorites.symbol': 1 });
 
 // save middleware to hash password
 userSchema.pre('save', async function(next) {
@@ -229,6 +239,7 @@ userSchema.methods.removeHolding = function(symbol, shares) {
         holding.lastUpdated = new Date();
     }
 };
+
 // Method to clean up expired refresh tokens
 userSchema.methods.cleanupRefreshTokens = function() {
     const now = new Date();

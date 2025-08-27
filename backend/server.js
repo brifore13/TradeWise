@@ -1,14 +1,11 @@
 import './config.js';
 import express from 'express';
 import mongoose from 'mongoose';
-import dotenv from 'dotenv';
 import cors from 'cors';                
 import User from './models/User.js';
 import authRoutes from './routes/auth.js';
 import tradingRoutes from './routes/trading.js';
-
-// Load environment variables
-// dotenv.config();
+import favoritesRoutes from './routes/favorites.js'
 
 const app = express();
 const PORT = process.env.PORT || 3001;
@@ -44,6 +41,7 @@ connectDB();
 //  ROUTES
 app.use('/api/auth', authRoutes);
 app.use('/api/trading', tradingRoutes);
+app.use('/api/favorites', favoritesRoutes);
 
 // Basic routes
 app.get('/', (req, res) => {

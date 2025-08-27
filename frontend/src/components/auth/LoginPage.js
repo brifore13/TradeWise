@@ -52,7 +52,7 @@ const LoginPage = () => {
         localStorage.setItem('token', data.token);
         navigate('/dashboard')
     } catch (err) {
-      setError(error.message || 'Registration failed');
+      setError(err.message || 'Registration failed');
     }
   }
 

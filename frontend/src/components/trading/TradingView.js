@@ -24,7 +24,7 @@ const TradeView = () => {
             setStockData(data);
         } catch (error) {
             setError('Stock not found');
-            setStockData('Search failed')
+            setStockData(null)
         }
     }
 

@@ -21,7 +21,6 @@ const LoginPage = () => {
     e.preventDefault();
     setError('');
 
-    // get user data from api/backend
     try {
       const data = await loginUser({
           email: credentials.email,
@@ -41,7 +40,6 @@ const LoginPage = () => {
     e.preventDefault();
     setError('');
 
-    // if password doesnt match confirm pw
     if (registerData.password !== registerData.confirmPassword) {
       setError('Passwords do not match');
       return;
@@ -56,134 +54,186 @@ const LoginPage = () => {
     }
   }
 
-    return (
-        <div className="login-container">
-          <div className="login-box">
-            <h1 className="login-title">TradeWise</h1>
-            {/* Display Error */}
-            {error && <div className="error-message">{error}</div>}
+  return (
+    <div className="center-layout">
+      <div className="card card-lg" style={{ width: '100%', maxWidth: '480px' }}>
+        {/* Header */}
+        <div className="text-center mb-12">
+          <h1 className="text-3xl font-bold text-brand mb-2">TradeWise</h1>
+          {!isLogin && <p className="text-base text-secondary">Create your account</p>}
+          {isLogin && <p className="text-base text-secondary">Welcome back to your portfolio</p>}
+        </div>
 
-            {/* Login */}
-            {isLogin ? (
-              <>
-              <form onSubmit={handleLogin}>
+        {/* Error Display */}
+        {error && (
+          <div className="mb-6 text-center">
+            <p className="text-sm text-danger">{error}</p>
+          </div>
+        )}
+
+        {/* Login Form */}
+        {isLogin ? (
+          <>
+            <form onSubmit={handleLogin} className="space-y-6 mb-8">
+              <div className="form-group">
                 <input 
                   type="email"
-                  placeholder="email"
-                  className="input-field"
+                  placeholder="Email address"
+                  className="form-input"
                   value={credentials.email}
                   onChange={(e) => setCredentials({...credentials, email: e.target.value})}
                   required
                 />
+              </div>
+              
+              <div className="form-group">
                 <input 
                   type="password"
-                  placeholder="password"
-                  className="input-field"
+                  placeholder="Password"
+                  className="form-input"
                   value={credentials.password}
                   onChange={(e) => setCredentials({...credentials, password: e.target.value})}
                   required
                 />
-                <div className="tagline">smart investing starts here</div>
+              </div>
+
+              <div className="text-center mb-6">
+                <p className="text-sm text-secondary">Smart investing starts here</p>
+              </div>
+
+              <button type="submit" className="btn btn-primary btn-full btn-lg">
+                Sign In
+              </button>
+            </form>
+
+            <div className="text-center mb-8">
+              <p className="text-sm text-secondary">
+                New to TradeWise?{" "}
                 <button
-                  type="submit" 
-                  className="login-button">login
+                  type="button"
+                  className="text-brand font-medium hover:underline bg-transparent border-none cursor-pointer"
+                  onClick={() => {
+                    setIsLogin(false);
+                    setError('');
+                  }}
+                >
+                  Create account
                 </button>
-              </form>
-                <div className="new-user">
-                  new user?
-                  <span 
-                    className="create-link"
-                    onClick={() => {
-                      setIsLogin(false);
-                      setError('');
-                    }}
-                  > create account</span> 
+              </p>
+            </div>
+          </>
+        ) : (
+          <>
+            {/* Register Form */}
+            <form onSubmit={handleRegister} className="space-y-6 mb-8">
+              <div className="grid grid-cols-2 gap-4">
+                <div className="form-group">
+                  <input
+                    type="text"
+                    placeholder="First Name"
+                    className="form-input"
+                    value={registerData.firstName}
+                    onChange={(e) => setRegisterData({...registerData, firstName: e.target.value})}
+                    required
+                  />
                 </div>
-              </>
-            ) : (
-              <>
-              {/* Register User Form */}
-              <form onSubmit={handleRegister}>
-                <input
-                  type="text"
-                  placeholder="First Name"
-                  className="input-field"
-                  value={registerData.firstName}
-                  onChange={(e) => setRegisterData({...registerData, firstName: e.target.value})}
-                  required
-                />
-                <input 
-                  type="text"
-                  placeholder="Last Name"
-                  className="input-field"
-                  value={registerData.lastName}
-                  onChange={(e) => setRegisterData({...registerData, lastName: e.target.value})}
-                  required
-                />
+                <div className="form-group">
+                  <input 
+                    type="text"
+                    placeholder="Last Name"
+                    className="form-input"
+                    value={registerData.lastName}
+                    onChange={(e) => setRegisterData({...registerData, lastName: e.target.value})}
+                    required
+                  />
+                </div>
+              </div>
+
+              <div className="form-group">
                 <input 
                   type="email"
-                  placeholder="Email"
-                  className="input-field"
+                  placeholder="Email address"
+                  className="form-input"
                   value={registerData.email}
                   onChange={(e) => setRegisterData({...registerData, email: e.target.value})}
                   required
                 />
+              </div>
+
+              <div className="form-group">
                 <input 
                   type="password"
                   placeholder="Password"
-                  className="input-field"
+                  className="form-input"
                   value={registerData.password}
                   onChange={(e) => setRegisterData({...registerData, password: e.target.value})}
                   required
                 />
+              </div>
+
+              <div className="form-group">
                 <input 
                   type="password"
                   placeholder="Confirm Password"
-                  className="input-field"
+                  className="form-input"
                   value={registerData.confirmPassword}
                   onChange={(e) => setRegisterData({...registerData, confirmPassword: e.target.value})}
+                  required
                 />
+              </div>
+
+              <button type="submit" className="btn btn-primary btn-full btn-lg">
+                Create Account
+              </button>
+            </form>
+
+            <div className="text-center mb-8">
+              <p className="text-sm text-secondary">
+                Already have an account?{" "}
                 <button
-                  type="submit"
-                  className="login-button"
-                >
-                  register
-                </button>
-              </form>
-              {/* back to login */}
-              <div className="new-user">
-                already have an account?
-                <span
-                  className="create-link"
+                  type="button"
+                  className="text-brand font-medium hover:underline bg-transparent border-none cursor-pointer"
                   onClick={() => {
                     setIsLogin(true);
                     setError('');
                   }}
-                > login</span>
-              </div>
-              </>
-            )}
+                >
+                  Sign in
+                </button>
+              </p>
+            </div>
+          </>
+        )}
 
-            {/* About helper button */}
-            <button 
-              className="about-button" 
-              onClick={() => setShowAbout(!showAbout)}
-            >
-              about
-            </button>
+        {/* About Section */}
+        <div className="text-center">
+          <button 
+            className="btn btn-ghost btn-sm"
+            onClick={() => setShowAbout(!showAbout)}
+          >
+            About TradeWise
+          </button>
 
-            {showAbout && (
-              <div className="about-section">
-                <h2 className="login-title">TradeWise</h2>
-                <p>TradeWise is a user-friendly app that makes investion in the stock market simple and straight-forward.</p>
-                <p>To begin, create an account.</p>
-                <p>Once you log in, you will be taken to your dashboard.</p>
-                <p>Every page has a help button for more detailed instructions.</p>
+          {showAbout && (
+            <div className="mt-8 p-6 bg-gray-50 rounded-lg text-left">
+              <h3 className="text-lg font-semibold text-primary mb-4">About TradeWise</h3>
+              <div className="space-y-3">
+                <p className="text-sm text-secondary">
+                  TradeWise is a user-friendly app that makes investment in the stock market simple and straightforward.
+                </p>
+                <p className="text-sm text-secondary">
+                  To begin, create an account and log in to access your dashboard.
+                </p>
+                <p className="text-sm text-secondary">
+                  Every page has a help button for detailed instructions.
+                </p>
               </div>
-            )}
-          </div>
+            </div>
+          )}
         </div>
-    );
+      </div>
+    </div>
+  );
 };
-    
+
 export default LoginPage;

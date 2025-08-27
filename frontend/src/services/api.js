@@ -133,32 +133,27 @@ export const removeFavorite = async (symbol) => {
   }
 };
 
-// Portfolio APIs (you'll need to implement these in your backend)
-export const getPortfolio = async () => {
-  try {
-    // This should call your backend portfolio endpoint when implemented
-    const response = await api.get('/portfolio'); // You'll need to create this endpoint
-    return response.data;
-  } catch (error) {
-    throw new Error(error.response?.data?.message || 'Failed to get portfolio');
-  }
-};
+
 
 // Legacy aliases for backward compatibility
 export const loginUser = login;
 export const registerUser = register;
 
-// Dashboard and portfolio functions (temporary implementations)
+// Dashboard and portfolio functions
 export const fetchDashboard = async () => {
   try {
     // Get portfolio data and recent trades for dashboard
     const [portfolio, trades] = await Promise.all([
-      getPortfolio().catch(() => ({ cash: 10000, totalValue: 10000, holdings: [] })),
+      getPortfolio(),
       getTradeHistory().catch(() => [])
     ]);
     
     return {
-      portfolio,
+      portfolio: {
+        totalValue: portfolio.totalValue,
+        todaysChange: portfolio.dailyChange || 0, // Use dailyChange from backend
+        holdings: portfolio.holdings || []
+      },
       recentTrades: trades.slice(0, 5), // Last 5 trades
       marketSummary: [] // You can add market summary later
     };
@@ -167,17 +162,27 @@ export const fetchDashboard = async () => {
   }
 };
 
-export const getPortfolioSummary = async () => {
+export const getPortfolio = async () => {
   try {
-    // This should eventually call your backend portfolio endpoint
-    // For now, return mock data or basic portfolio info
+    const response = await api.get('/portfolio');
+    return response.data.data;
+  } catch (error) {
+    // Return default portfolio if user has no trades yet
     return {
       totalValue: 10000,
-      cash: 5000,
+      cash: 10000,
+      totalAssetValue: 0,
       holdings: [],
-      dayChange: 0,
-      dayChangePercent: 0
+      dailyChange: 0,
+      dailyChangePercent: 0
     };
+  }
+};
+
+export const getPortfolioSummary = async () => {
+  try {
+    const portfolio = await getPortfolio();
+    return portfolio;
   } catch (error) {
     throw new Error('Failed to get portfolio summary');
   }

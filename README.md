@@ -201,7 +201,7 @@ const Dashboard = () => {
 ```
 6. React Components
 ```
-// Stock APIs - Now calling your backend
+// Stock APIs
 export const searchStock = async (query) => {
   try {
     const response = await api.get('/trading/search', {
